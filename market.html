@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Analysis - StockPredict</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        .market-bg {
+            background: 
+                linear-gradient(rgba(10, 15, 30, 0.92), rgba(10, 15, 30, 0.95)),
+                url('https://img.freepik.com/premium-vector/stock-market-graph-forex-trading-chart-business-investment-financial-background_73426-205.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .glass-effect {
+            background: rgba(23, 29, 58, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: rgba(23, 29, 58, 0.25);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(23, 29, 58, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen text-gray-100">
+    <!-- Navigation -->
+    <nav class="glass-effect shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="index.html" class="text-xl font-bold text-blue-900">StockPredict</a>
+                <div class="flex items-center space-x-4 whitespace-nowrap">
+                    <a href="index.html" class="text-gray-300 hover:text-blue-400 text-sm">Home</a>
+                    <a href="#" class="text-gray-300 hover:text-blue-400 text-sm">About</a>
+                    <a href="#market-overview" class="text-blue-400 text-sm">Market</a>
+                    <a href="#gainers-losers" class="text-gray-300 hover:text-blue-400 text-sm">Top Movers</a>
+                    <a href="#sector-performance" class="text-gray-300 hover:text-blue-400 text-sm">Sectors</a>
+                    <a href="#market-depth" class="text-gray-300 hover:text-blue-400 text-sm">Market Depth</a>
+                    <div class="flex items-center space-x-4 ml-4">
+                        <a href="login.html" class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">Sign In</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <div class="container mx-auto px-4 py-8 relative">
+        <div class="glass-effect max-w-2xl mx-auto rounded-lg p-4">
+            <input type="text" 
+                id="stockSearch" 
+                placeholder="Search for stocks, companies or brands..." 
+                class="w-full px-4 py-3 rounded-lg bg-white/5 border-0 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+    </div>
+
+    <!-- Market Overview -->
+    <div id="market-overview" class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-lg p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Market Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Market Stats -->
+                <div class="glass-card p-4 rounded-lg">
+                    <h3 class="text-gray-400 text-sm">NIFTY 50</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-2xl font-bold text-white">19,425.30</span>
+                        <span class="text-green-400">+1.2%</span>
+                    </div>
+                </div>
+                <div class="glass-card p-4 rounded-lg">
+                    <h3 class="text-gray-400 text-sm mb-1">SENSEX</h3>
+                    <p class="text-2xl font-bold text-white">64,800.20</p>
+                    <span class="text-green-400">+0.9%</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg">
+                    <h3 class="text-gray-400 text-sm mb-1">BANK NIFTY</h3>
+                    <p class="text-2xl font-bold text-white">43,250.80</p>
+                    <span class="text-red-400">-0.3%</span>
+                </div>
+                <div class="glass-card p-4 rounded-lg">
+                    <h3 class="text-gray-400 text-sm mb-1">Market Cap</h3>
+                    <p class="text-2xl font-bold text-white">₹320.5T</p>
+                    <span class="text-gray-400">Total</span>
+                </div>
+            </div>
+            
+            <div id="marketChart" class="w-full h-[400px] glass-card rounded-lg p-4"></div>
+        </div>
+    </div>
+
+    <!-- Top Gainers & Losers -->
+    <div id="gainers-losers" class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Gainers -->
+            <div class="glass-effect rounded-lg p-6">
+                <h2 class="text-xl font-bold text-green-400 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    Top Gainers
+                </h2>
+                <div class="space-y-4">
+                    <!-- Gainers List -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-gray-400 text-sm border-b border-gray-700">
+                                    <th class="text-left pb-3">Stock</th>
+                                    <th class="text-right pb-3">Price</th>
+                                    <th class="text-right pb-3">Change</th>
+                                    <th class="text-right pb-3">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-700/50">
+                                    <td class="py-3">
+                                        <div>
+                                            <div class="font-bold text-white">Reliance</div>
+                                            <div class="text-gray-400">RELIANCE</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-right text-white">₹2,785.50</td>
+                                    <td class="text-right text-green-400">+5.2%</td>
+                                    <td class="text-right text-gray-400">8.2M</td>
+                                </tr>
+                                <!-- Add more rows with more gainers -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Losers -->
+            <div class="glass-effect rounded-lg p-6">
+                <h2 class="text-xl font-bold text-red-400 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"/>
+                    </svg>
+                    Top Losers
+                </h2>
+                <div class="space-y-4">
+                    <!-- Losers List -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-gray-400 text-sm border-b border-gray-700">
+                                    <th class="text-left pb-3">Stock</th>
+                                    <th class="text-right pb-3">Price</th>
+                                    <th class="text-right pb-3">Change</th>
+                                    <th class="text-right pb-3">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-700/50">
+                                    <td class="py-3">
+                                        <div>
+                                            <div class="font-bold text-white">Wipro</div>
+                                            <div class="text-gray-400">WIPRO</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-right text-white">₹402.30</td>
+                                    <td class="text-right text-red-400">-2.8%</td>
+                                    <td class="text-right text-gray-400">6.7M</td>
+                                </tr>
+                                <!-- Add more rows with more losers -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Performance -->
+    <div id="sector-performance" class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-lg p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Sector Performance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Banking Sector -->
+                <div class="glass-card p-6 rounded-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-8 h-8 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l9-4 9 4v12l-9 4-9-4V6z"/>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-white">Banking</h3>
+                                <p class="text-green-400">+2.8%</p>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-400">Volume: 245M</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-300">Top Performers:</div>
+                        <div class="flex justify-between text-sm">
+                            <span>HDFC Bank</span>
+                            <span class="text-green-400">+3.5%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>ICICI Bank</span>
+                            <span class="text-green-400">+2.1%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IT Sector -->
+                <div class="glass-card p-6 rounded-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-8 h-8 text-purple-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-white">IT</h3>
+                                <p class="text-red-400">-1.2%</p>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-400">Volume: 180M</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-300">Top Performers:</div>
+                        <div class="flex justify-between text-sm">
+                            <span>TCS</span>
+                            <span class="text-green-400">+0.8%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Infosys</span>
+                            <span class="text-red-400">-1.9%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto Sector -->
+                <div class="glass-card p-6 rounded-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-8 h-8 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <div>
+                                <h3 class="font-bold text-white">Auto</h3>
+                                <p class="text-green-400">+3.2%</p>
+                            </div>
+                        </div>
+                        <span class="text-sm text-gray-400">Volume: 156M</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-300">Top Performers:</div>
+                        <div class="flex justify-between text-sm">
+                            <span>Tata Motors</span>
+                            <span class="text-green-400">+3.2%</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>M&M</span>
+                            <span class="text-green-400">+2.7%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Depth -->
+    <div id="market-depth" class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-lg p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Market Depth</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Buy Side -->
+                <div class="glass-card p-6 rounded-lg">
+                    <h3 class="text-lg font-bold text-green-400 mb-4">Buy Orders</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-400">Price</div>
+                                <div class="font-bold text-white">₹2,785.50</div>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="text-sm text-gray-400">Orders</div>
+                                <div class="text-white">245</div>
+                            </div>
+                            <div class="flex-1 text-right">
+                                <div class="text-sm text-gray-400">Quantity</div>
+                                <div class="text-white">1.2M</div>
+                            </div>
+                        </div>
+                        <!-- Add more buy orders -->
+                    </div>
+                </div>
+
+                <!-- Sell Side -->
+                <div class="glass-card p-6 rounded-lg">
+                    <h3 class="text-lg font-bold text-red-400 mb-4">Sell Orders</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-gray-700 pb-2">
+                            <div class="flex-1">
+                                <div class="text-sm text-gray-400">Price</div>
+                                <div class="font-bold text-white">₹2,786.00</div>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="text-sm text-gray-400">Orders</div>
+                                <div class="text-white">189</div>
+                            </div>
+                            <div class="flex-1 text-right">
+                                <div class="text-sm text-gray-400">Quantity</div>
+                                <div class="text-white">0.9M</div>
+                            </div>
+                        </div>
+                        <!-- Add more sell orders -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Depth Chart -->
+            <div class="mt-8 glass-card p-6 rounded-lg">
+                <h3 class="text-lg font-bold text-white mb-4">Order Book Distribution</h3>
+                <div class="h-64 relative">
+                    <!-- Add a placeholder for the chart -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-gray-400">Market Depth Chart will be displayed here</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 StockPredict. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize market chart
+        const chart = LightweightCharts.createChart(document.getElementById('marketChart'), {
+            layout: {
+                background: { color: 'rgba(23, 29, 58, 0.25)' },
+                textColor: '#d1d5db',
+            },
+            grid: {
+                vertLines: { color: 'rgba(197, 203, 206, 0.1)' },
+                horzLines: { color: 'rgba(197, 203, 206, 0.1)' },
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+            },
+        });
+
+        const lineSeries = chart.addLineSeries({ 
+            color: '#26a69a',
+            lineWidth: 2,
+        });
+
+        // Generate sample data
+        const data = [];
+        for (let i = 0; i < 100; i++) {
+            data.push({
+                time: new Date(Date.now() - (100 - i) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+                value: 18000 + Math.random() * 2000
+            });
+        }
+        lineSeries.setData(data);
+
+        // Responsive chart
+        window.addEventListener('resize', () => {
+            chart.applyOptions({
+                width: document.getElementById('marketChart').clientWidth,
+                height: document.getElementById('marketChart').clientHeight,
+            });
+        });
+    </script>
+</body>
+</html>

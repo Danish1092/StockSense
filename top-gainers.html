@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Gainers - StockSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .market-bg {
+            background: linear-gradient(135deg, 
+                rgba(37, 47, 82, 0.98) 0%,
+                rgba(67, 56, 116, 0.96) 50%,
+                rgba(44, 62, 106, 0.94) 100%);
+            position: relative;
+        }
+
+        .glass-effect {
+            background: linear-gradient(135deg,
+                rgba(27, 37, 72, 0.95),
+                rgba(47, 36, 96, 0.92)
+            );
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @supports (backdrop-filter: blur(10px)) {
+            .glass-effect {
+                background: rgba(23, 29, 58, 0.15);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            }
+            
+            .glass-card {
+                background: rgba(23, 29, 58, 0.25);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.3s ease;
+                height: 200px;
+            }
+            
+            .glass-card:hover {
+                transform: translateY(-5px);
+                background: rgba(23, 29, 58, 0.35);
+            }
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen text-gray-100">
+    <div class="relative z-10">
+        <!-- Navigation Bar -->
+        <nav class="glass-effect shadow-lg">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <a href="index.html" class="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">StockSense</a>
+                    <a href="index.html" class="text-gray-300 hover:text-blue-400 text-sm">Back to Home</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mx-auto px-4 py-16">
+            <div class="glass-effect rounded-lg p-8">
+                <h1 class="text-3xl font-bold mb-8 text-center text-white">Top Gaining Stocks</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Top Gainers Grid - 10 Companies -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Reliance Industries</h3>
+                                <p class="text-sm text-gray-400">NSE: RELIANCE</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+8.5%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹2,890.75</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">12.5M</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Tata Motors</h3>
+                                <p class="text-sm text-gray-400">NSE: TATAMOTORS</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+7.2%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹450.50</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">10.2M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">SBI</h3>
+                                <p class="text-sm text-gray-400">NSE: SBIN</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+6.8%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹520.30</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">8.7M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Tech Mahindra</h3>
+                                <p class="text-sm text-gray-400">NSE: TECHM</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+6.5%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹1,050.75</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">6.3M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Infosys</h3>
+                                <p class="text-sm text-gray-400">NSE: INFY</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+5.9%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹1,750.20</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">9.1M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">HDFC Bank</h3>
+                                <p class="text-sm text-gray-400">NSE: HDFCBANK</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+5.4%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹1,600.50</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">7.4M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Bharti Airtel</h3>
+                                <p class="text-sm text-gray-400">NSE: BHARTIARTL</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+5.1%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹700.75</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">5.8M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Asian Paints</h3>
+                                <p class="text-sm text-gray-400">NSE: ASIANPAINT</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+4.8%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹3,100.25</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">4.9M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">ICICI Bank</h3>
+                                <p class="text-sm text-gray-400">NSE: ICICIBANK</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+4.5%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹650.40</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">6.1M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">L&T</h3>
+                                <p class="text-sm text-gray-400">NSE: LT</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+4.2%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹1,500.60</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">5.3M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">HCL Tech</h3>
+                                <p class="text-sm text-gray-400">NSE: HCLTECH</p>
+                            </div>
+                            <span class="text-green-400 text-xl font-bold">+4.0%</span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Current Price</span>
+                                <span class="text-white font-bold">₹1,200.80</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Volume</span>
+                                <span class="text-white">4.2M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Losers - StockPredict</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
+    <style>
+        .market-bg {
+            background: 
+                linear-gradient(rgba(10, 15, 30, 0.92), rgba(10, 15, 30, 0.95)),
+                url('https://images.unsplash.com/photo-1636953056323-9c09fdd74fa6?auto=format&fit=crop&q=80'),
+                url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80');
+            background-size: cover, cover, cover;
+            background-position: center, center, center;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        /* Add other styles from index.html */
+        @supports (backdrop-filter: blur(10px)) {
+            .glass-effect {
+                background: rgba(23, 29, 58, 0.15);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            }
+            
+            .glass-card {
+                background: rgba(23, 29, 58, 0.25);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-lg p-8">
+            <h1 class="text-3xl font-bold mb-8 text-white">Top Losers</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for loser in losers %}
+                <div class="glass-card rounded-lg p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">{{ loser.name }}</h3>
+                            <p class="text-blue-400 text-sm">{{ loser.symbol }}</p>
+                        </div>
+                        <span class="text-red-400 text-xl font-bold">{{ loser.change }}</span>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-2xl font-bold text-white">₹{{ loser.price }}</p>
+                        <p class="text-gray-400 text-sm">Volume: {{ loser.volume }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

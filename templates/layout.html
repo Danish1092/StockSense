@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .market-bg {
+            background: linear-gradient(135deg, 
+                rgba(37, 47, 82, 0.98) 0%,
+                rgba(67, 56, 116, 0.96) 50%,
+                rgba(44, 62, 106, 0.94) 100%);
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        /* Copy all your existing styles here */
+    </style>
+</head>
+<body class="market-bg min-h-screen text-gray-800">
+    <div class="relative z-10">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+        /* Copy your existing JavaScript here */
+    </script>
+</body>
+</html>

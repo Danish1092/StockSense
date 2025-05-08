@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Reports - StockSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Copy market-bg and glass-effect styles */
+        .market-bg {
+            background: linear-gradient(135deg, 
+                rgba(37, 47, 82, 0.98) 0%,
+                rgba(67, 56, 116, 0.96) 50%,
+                rgba(44, 62, 106, 0.94) 100%);
+            position: relative;
+        }
+
+        .glass-effect {
+            background: linear-gradient(135deg,
+                rgba(27, 37, 72, 0.95),
+                rgba(47, 36, 96, 0.92)
+            );
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen">
+    <!-- Navigation -->
+    <nav class="glass-effect shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="../index.html" class="text-xl font-bold text-white">StockSense</a>
+                <a href="../index.html" class="text-gray-300 hover:text-blue-400 text-sm">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="glass-effect rounded-lg p-8">
+            <h1 class="text-3xl font-bold text-white mb-8">Stock Market Analysis Reports</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Report 1 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">Stock Price Prediction using LSTM</h3>
+                    <p class="text-gray-300 mb-4">Research on deep learning models for stock prediction using LSTM networks</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">Kaggle Research</span>
+                        <a href="https://www.kaggle.com/code/faressayah/stock-price-prediction-using-lstm-for-beginners" 
+                           target="_blank"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 2 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">ML Stock Forecasting</h3>
+                    <p class="text-gray-300 mb-4">Machine Learning approach to stock market prediction using Python</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">GitHub Research</span>
+                        <a href="https://github.com/microsoft/forecasting" 
+                           target="_blank"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 3 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">Algorithmic Trading Strategy</h3>
+                    <p class="text-gray-300 mb-4">Implementation of ML-based trading strategies</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">QuantConnect</span>
+                        <a href="https://www.quantconnect.com/tutorials/strategy-library/machine-learning-sentiment-prediction-algorithm" 
+                           target="_blank"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 4 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">Time Series Analysis</h3>
+                    <p class="text-gray-300 mb-4">Stock market prediction using time series analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">Towards Data Science</span>
+                        <a href="https://towardsdatascience.com/time-series-forecasting-with-deep-learning-and-attention-mechanism-2d001fc871fc" 
+                           target="_blank"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 5 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">Market Sentiment Analysis</h3>
+                    <p class="text-gray-300 mb-4">NLP-based stock prediction using news sentiment</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">ArXiv Research</span>
+                        <a href="https://arxiv.org/abs/2004.10178" 
+                           target="_blank"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 6 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2022 Market Review</h3>
+                    <p class="text-gray-300 mb-4">Focus on post-pandemic recovery, commodity prices surge, and global market volatility</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2022</span>
+                        <a href="../assets/reports/market-review-2022.pdf" 
+                           download="StockSense-Market-Review-2022.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 7 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2021 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Recovery phase, emerging sectors, and digitalization impact on markets</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2021</span>
+                        <a href="../assets/reports/market-analysis-2021.pdf" 
+                           download="StockSense-Market-Analysis-2021.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 8 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2020 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Impact of COVID-19 on global markets</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2020</span>
+                        <a href="../assets/reports/market-analysis-2020.pdf" 
+                           download="StockSense-Market-Analysis-2020.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 9 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2019 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Pre-pandemic market trends and analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2019</span>
+                        <a href="../assets/reports/market-analysis-2019.pdf" 
+                           download="StockSense-Market-Analysis-2019.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 10 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2018 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Market trends and analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2018</span>
+                        <a href="../assets/reports/market-analysis-2018.pdf" 
+                           download="StockSense-Market-Analysis-2018.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 11 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2017 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Market trends and analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2017</span>
+                        <a href="../assets/reports/market-analysis-2017.pdf" 
+                           download="StockSense-Market-Analysis-2017.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 12 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2016 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Market trends and analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2016</span>
+                        <a href="../assets/reports/market-analysis-2016.pdf" 
+                           download="StockSense-Market-Analysis-2016.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report 13 -->
+                <div class="glass-effect rounded-lg p-6 hover:transform hover:-translate-y-1 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-2">2015 Market Analysis</h3>
+                    <p class="text-gray-300 mb-4">Market trends and analysis</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400 text-sm">November 2015</span>
+                        <a href="../assets/reports/market-analysis-2015.pdf" 
+                           download="StockSense-Market-Analysis-2015.pdf"
+                           class="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

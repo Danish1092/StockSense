@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Losers - StockSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .market-bg {
+            background: linear-gradient(135deg, 
+                rgba(37, 47, 82, 0.98) 0%,
+                rgba(67, 56, 116, 0.96) 50%,
+                rgba(44, 62, 106, 0.94) 100%);
+            position: relative;
+        }
+
+        .glass-effect {
+            background: linear-gradient(135deg,
+                rgba(27, 37, 72, 0.95),
+                rgba(47, 36, 96, 0.92)
+            );
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="glass-effect shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="index.html" class="text-xl font-bold text-white cursor-pointer hover:text-blue-400 transition-colors">StockSense</a>
+                <a href="index.html" class="text-gray-300 hover:text-blue-400 text-sm">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-white mb-8">Top Losers</h1>
+        
+        <!-- Top Losers Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Sample Loser Cards -->
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">ZOMATO</h3>
+                        <p class="text-gray-300">Zomato Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-6.32%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹82.15</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹5.55</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">18.7M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Top Losers -->
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">PAYTM</h3>
+                        <p class="text-gray-300">One97 Communications</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-4.85%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹625.40</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹31.85</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">12.3M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">YESBANK</h3>
+                        <p class="text-gray-300">Yes Bank Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-3.92%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹15.70</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹0.64</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">25.1M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">IDEA</h3>
+                        <p class="text-gray-300">Vodafone Idea Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-3.75%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹8.45</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹0.33</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">32.8M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">SUZLON</h3>
+                        <p class="text-gray-300">Suzlon Energy Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-3.45%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹21.35</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹0.76</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">15.4M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">PNB</h3>
+                        <p class="text-gray-300">Punjab National Bank</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-3.28%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹73.85</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹2.50</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">20.6M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">RAIN</h3>
+                        <p class="text-gray-300">Rain Industries Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-3.15%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹154.20</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹5.02</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">8.9M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">IRCTC</h3>
+                        <p class="text-gray-300">Indian Railway Catering</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-2.95%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹685.30</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹20.85</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">7.2M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">IEX</h3>
+                        <p class="text-gray-300">Indian Energy Exchange</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-2.82%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹142.75</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹4.15</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">5.8M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-effect rounded-lg p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">BANDHANBNK</h3>
+                        <p class="text-gray-300">Bandhan Bank Ltd.</p>
+                    </div>
+                    <span class="text-red-400 text-xl font-bold">-2.75%</span>
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price</span>
+                        <span class="text-white">₹225.40</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Change</span>
+                        <span class="text-red-400">-₹6.35</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Volume</span>
+                        <span class="text-white">9.4M</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
