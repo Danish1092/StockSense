@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - StockSense{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Reports - StockPredict</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .market-bg {
+            background: 
+                linear-gradient(rgba(10, 15, 30, 0.92), rgba(10, 15, 30, 0.95)),
+                url('https://images.unsplash.com/photo-1636953056323-9c09fdd74fa6?auto=format&fit=crop&q=80'),
+                url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80');
+            background-size: cover, cover, cover;
+            background-position: center, center, center;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        .market-bg::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, rgba(23, 29, 58, 0.3) 0%, transparent 100%),
+                radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 100%),
+                repeating-linear-gradient(-45deg, rgba(38, 166, 154, 0.05) 0px, rgba(38, 166, 154, 0.05) 1px, transparent 1px, transparent 10px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @supports (backdrop-filter: blur(10px)) {
+            .glass-effect {
+                background: rgba(23, 29, 58, 0.15);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            }
+            
+            .glass-card {
+                background: rgba(23, 29, 58, 0.25);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="market-bg min-h-screen text-gray-100">
+    <div class="relative z-10">
+        <nav class="glass-effect shadow-lg">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <a href="index.html" class="text-xl font-bold text-blue-400">StockPredict</a>
+                    <a href="index.html" class="text-gray-300 hover:text-blue-400">Back to Home</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mx-auto px-4 py-16">
+            <div class="glass-effect rounded-lg p-8">
+                <h1 class="text-3xl font-bold mb-8 text-center text-white">Market Research Reports</h1>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- SEBI Annual Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">SEBI Annual Report 2023</h3>
+                                <p class="text-sm text-gray-400">Official Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian securities market for 2022-23.</p>
+                        <a href="https://www.sebi.gov.in/reports-and-statistics/publications/annual-reports" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- NSE Market Pulse -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">NSE Market Pulse</h3>
+                                <p class="text-sm text-gray-400">Monthly Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Latest market trends and analysis from NSE.</p>
+                        <a href="https://www.nseindia.com/reports-indices" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white transition-colors">
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- Quarterly Market Analysis -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Q3 2023 Market Analysis</h3>
+                                <p class="text-sm text-gray-400">Published: Oct 15, 2023</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of market trends and sector performance for Q3 2023.</p>
+                        <a href="reports/Q3-2023-Market-Analysis.pdf" download class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Download Report
+                        </a>
+                    </div>
+
+                    <!-- Monthly Sector Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Tech Sector Review</h3>
+                                <p class="text-sm text-gray-400">Published: Nov 1, 2023</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">In-depth analysis of technology sector stocks and future outlook.</p>
+                        <a href="reports/Tech-Sector-Review-Nov2023.pdf" download class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Download Report
+                        </a>
+                    </div>
+
+                    <!-- Weekly Market Update -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-purple-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2V9a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 00-2 2v6a2 2 0 002 2H9a2 2 0 01-2-2zm0 0V9a2 2 0 012-2h6a2 2 0 012 2v10m-10 0a2 2 0 002 2h14a2 2 0 002-2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Weekly Market Update</h3>
+                                <p class="text-sm text-gray-400">Published: Nov 10, 2023</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Latest weekly analysis of market movements and key events.</p>
+                        <a href="reports/Weekly-Market-Update-Nov10.pdf" download class="inline-flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Download Report
+                        </a>
+                    </div>
+
+                    <!-- BSE Annual Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-red-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">BSE Annual Report 2023</h3>
+                                <p class="text-sm text-gray-400">Official Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian securities market for 2022-23.</p>
+                        <a href="https://www.bseindia.com/markets/MarketInfo/DispNewNoticesCirculars.aspx" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- RBI Financial Stability Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-yellow-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">RBI Financial Stability Report</h3>
+                                <p class="text-sm text-gray-400">Official Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian financial stability for 2022-23.</p>
+                        <a href="https://www.rbi.org.in/Scripts/AnnualPublications.aspx?head=Financial%20Stability%20Report" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white transition-colors">
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- NSDL Monthly Market Update -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-teal-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">NSDL Monthly Market Update</h3>
+                                <p class="text-sm text-gray-400">Monthly Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Latest market trends and analysis from NSDL.</p>
+                        <a href="https://nsdl.co.in/publications/monthly.php" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-teal-500 hover:bg-teal-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- CDSL Investor Guide -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-indigo-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">CDSL Investor Guide</h3>
+                                <p class="text-sm text-gray-400">Monthly Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Latest market trends and analysis from CDSL.</p>
+                        <a href="https://www.cdslindia.com/Publications/InvestorGuide.aspx" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- AMFI Mutual Fund Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-pink-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">AMFI Mutual Fund Report</h3>
+                                <p class="text-sm text-gray-400">Monthly Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Latest market trends and analysis from AMFI.</p>
+                        <a href="https://www.amfiindia.com/research-information/reports" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-pink-500 hover:bg-pink-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- Economic Survey -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-orange-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Economic Survey</h3>
+                                <p class="text-sm text-gray-400">Annual Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian economy for 2022-23.</p>
+                        <a href="https://www.indiabudget.gov.in/economicsurvey/" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- Financial Sector Assessment -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-gray-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Financial Sector Assessment</h3>
+                                <p class="text-sm text-gray-400">Annual Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian financial sector for 2022-23.</p>
+                        <a href="https://www.rbi.org.in/Scripts/AnnualPublications.aspx?head=Financial%20Sector%20Assessment" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+
+                    <!-- Market Infrastructure Report -->
+                    <div class="glass-card rounded-lg p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-cyan-400/20 p-3 rounded-full mr-4">
+                                <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Market Infrastructure Report</h3>
+                                <p class="text-sm text-gray-400">Annual Report</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Comprehensive analysis of Indian market infrastructure for 2022-23.</p>
+                        <a href="https://www.sebi.gov.in/reports-and-statistics/publications/market-infrastructure-reports" target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg text-white transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            View Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Additional Resources Section -->
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold mb-6 text-white">Research Databases</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <a href="https://www.sebi.gov.in/statistics" target="_blank" 
+                           class="glass-card p-6 hover:bg-blue-900/20 transition-colors">
+                            <h3 class="text-xl font-bold text-white mb-2">SEBI Statistics Database</h3>
+                            <p class="text-gray-300">Access historical market data and statistics</p>
+                        </a>
+                        
+                        <a href="https://www.nseindia.com/research" target="_blank"
+                           class="glass-card p-6 hover:bg-blue-900/20 transition-colors">
+                            <h3 class="text-xl font-bold text-white mb-2">NSE Research</h3>
+                            <p class="text-gray-300">Download detailed market research reports</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}
