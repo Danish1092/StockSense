@@ -1,9 +1,62 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from auth import login_required, handle_login, handle_signup
+import os
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.urandom(24)
 
-# Import routes after app initialization
-from routes import *
+# Basic routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        if email and password:
+            if handle_login(email, password):
+                session['user_email'] = email
+                return redirect(url_for('dashboard'))
+        flash('Invalid credentials')
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        username = request.form.get('username')
+        if email and password and username:
+            if handle_signup(email, password, username):
+                flash('Account created successfully!')
+                return redirect(url_for('login'))
+        flash('Registration failed')
+    return render_template('signup.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+# Market data routes
+@app.route('/stocks')
+def stocks():
+    return render_template('stocks.html')
+
+@app.route('/top-gainers')
+def top_gainers():
+    return render_template('top_gainers.html')
+
+@app.route('/top-losers')
+def top_losers():
+    return render_template('top_losers.html')
 
 # Error handlers
 @app.errorhandler(404)
