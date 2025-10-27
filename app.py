@@ -45,6 +45,16 @@ def logout():
 def dashboard():
     return render_template('dashboard.html')
 
+# Password Reset route
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        # Add your password reset logic here
+        flash('If your email exists in our system, you will receive a password reset link shortly.')
+        return redirect(url_for('login'))
+    return render_template('forgot-password.html')
+
 # Market data routes
 @app.route('/stocks')
 def stocks():

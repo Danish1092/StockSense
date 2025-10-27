@@ -1,23 +1,17 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">StockSense</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item"><a class="nav-link" href="/top-gainers">Top Gainers</a></li>
-        <li class="nav-item"><a class="nav-link" href="/top-losers">Top Losers</a></li>
-        <li class="nav-item"><a class="nav-link" href="/research">Research</a></li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        {% if 'user_id' in session %}
-          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        {% else %}
-          <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="/signup">Sign Up</a></li>
-        {% endif %}
-      </ul>
+<nav class="bg-navy-900 text-white py-4">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="text-2xl font-bold">StockSense</a>
+
+            <!-- Auth Buttons -->
+            <div class="flex items-center space-x-4">
+                {% if 'user_id' in session %}
+                    <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Logout</a>
+                {% else %}
+                    <a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
-  </div>
 </nav>
