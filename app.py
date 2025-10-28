@@ -1,14 +1,26 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from auth import login_required, handle_login, handle_signup
+from datetime import datetime
 import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 
+# Import market data functions
+from market_data import get_market_movers, format_large_number
+
 # Basic routes
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        gainers, losers = get_market_movers(limit=5)  # Get top 5 gainers and losers
+        return render_template('index.html', 
+                             gainers=gainers, 
+                             losers=losers, 
+                             format_number=format_large_number)
+    except Exception as e:
+        print(f"Error fetching market data: {e}")
+        return render_template('index.html', gainers=[], losers=[])
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -46,6 +58,18 @@ def dashboard():
     return render_template('dashboard.html')
 
 # Market data routes
+@app.route('/api/market-movers')
+def market_movers_api():
+    try:
+        gainers, losers = get_market_movers(limit=5)
+        return jsonify({
+            'gainers': gainers,
+            'losers': losers,
+            'timestamp': datetime.now().strftime('%H:%M:%S')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/stocks')
 def stocks():
     return render_template('stocks.html')
