@@ -7,17 +7,17 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 
 # Import market data functions
-from market_data import get_market_movers, format_large_number
+from market_data import get_market_movers_cached, format_number_wrapper
 
 # Basic routes
 @app.route('/')
 def index():
     try:
-        gainers, losers = get_market_movers(limit=5)  # Get top 5 gainers and losers
+        gainers, losers = get_market_movers_cached(limit=10)  # Get top 10 gainers and losers from cache
         return render_template('index.html', 
                              gainers=gainers, 
                              losers=losers, 
-                             format_number=format_large_number)
+                             format_number=format_number_wrapper)
     except Exception as e:
         print(f"Error fetching market data: {e}")
         return render_template('index.html', gainers=[], losers=[])
@@ -61,7 +61,7 @@ def dashboard():
 @app.route('/api/market-movers')
 def market_movers_api():
     try:
-        gainers, losers = get_market_movers(limit=5)
+        gainers, losers = get_market_movers_cached(limit=5)
         return jsonify({
             'gainers': gainers,
             'losers': losers,
