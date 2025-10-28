@@ -57,6 +57,13 @@ def get_screener_data() -> Tuple[List[Dict], List[Dict]]:
     
     return gainers, losers
 
+def safe_int(value: str) -> int:
+    """Safely convert a string to an integer, returning 0 on failure."""
+    try:
+        return int(value.replace(',', '').strip())
+    except ValueError:
+        return 0
+
 def get_moneycontrol_data() -> Tuple[List[Dict], List[Dict]]:
     """Fetch data from MoneyControl"""
     headers = {
@@ -84,7 +91,7 @@ def get_moneycontrol_data() -> Tuple[List[Dict], List[Dict]]:
                         'price': float(cols[3].text.replace(',', '').strip()),
                         'change': float(cols[4].text.replace(',', '').strip()),
                         'change_percent': float(cols[5].text.replace('%', '').strip()),
-                        'volume': int(cols[6].text.replace(',', '').strip()),
+                        'volume': safe_int(cols[6].text),
                         'source': 'MoneyControl'
                     })
         
@@ -104,7 +111,7 @@ def get_moneycontrol_data() -> Tuple[List[Dict], List[Dict]]:
                         'price': float(cols[3].text.replace(',', '').strip()),
                         'change': float(cols[4].text.replace(',', '').strip()),
                         'change_percent': float(cols[5].text.replace('%', '').strip()),
-                        'volume': int(cols[6].text.replace(',', '').strip()),
+                        'volume': safe_int(cols[6].text),
                         'source': 'MoneyControl'
                     })
     
