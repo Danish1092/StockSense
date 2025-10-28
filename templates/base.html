@@ -9,6 +9,45 @@
     {% block styles %}{% endblock %}
 </head>
 <body class="market-bg min-h-screen text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-navy-900 text-white py-4">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="/" class="text-2xl font-bold">StockSense</a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{{ url_for('top_gainers') }}" class="text-white hover:text-blue-400 transition-colors">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                            Top Gainers
+                        </span>
+                    </a>
+                    <a href="{{ url_for('top_losers') }}" class="text-white hover:text-blue-400 transition-colors">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"/>
+                            </svg>
+                            Top Losers
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Auth Buttons -->
+                <div class="flex items-center space-x-4">
+                    {% if 'user_id' in session %}
+                        <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Logout</a>
+                    {% else %}
+                        <a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Sign In</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="relative z-10">
         {% block content %}{% endblock %}
         

@@ -1,64 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - StockSense</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .market-bg {
-            background: linear-gradient(135deg, 
-                rgba(37, 47, 82, 0.98) 0%,
-                rgba(67, 56, 116, 0.96) 50%,
-                rgba(44, 62, 106, 0.94) 100%);
-        }
-        .glass-effect {
-            background: linear-gradient(135deg,
-                rgba(31, 41, 76, 0.95),
-                rgba(51, 40, 100, 0.92)
-            );
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.2);
-        }
-    </style>
-</head>
-<body class="market-bg min-h-screen">
-    <div class="flex items-center justify-center min-h-screen p-6">
-        <div class="glass-effect w-full max-w-md p-8 rounded-lg">
-            <h2 class="text-2xl font-bold text-white mb-6 text-center">Login to StockSense</h2>
-            
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="p-4 mb-4 bg-red-500/20 text-red-200 rounded-lg">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+{% extends "base.html" %}
+{% block title %}Login - StockSense{% endblock %}
 
-            <form method="POST" class="space-y-6">
-                <div>
-                    <label class="block text-gray-300 mb-2">Email</label>
-                    <input type="email" name="email" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 mb-2">Password</label>
-                    <input type="password" name="password" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg">
-                    Login
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-gray-400">
-                    Don't have an account? 
-                    <a href="{{ url_for('signup') }}" class="text-blue-400">Sign up</a>
-                </p>
+{% block styles %}
+<style>
+    .glass-effect {
+        background: rgba(23, 29, 58, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen p-6">
+    <div class="glass-effect w-full max-w-md p-8 rounded-lg">
+        <h2 class="text-2xl font-bold text-white mb-6 text-center">Login to StockSense</h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="p-4 mb-4 bg-red-500/20 text-red-200 rounded-lg">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="space-y-6">
+            <div>
+                <label class="block text-gray-300 mb-2">Email</label>
+                <input type="email" name="email" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
             </div>
+            <div>
+                <label class="block text-gray-300 mb-2">Password</label>
+                <input type="password" name="password" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
+            </div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember" name="remember" class="rounded bg-gray-800/50 text-blue-600 focus:ring-blue-500">
+                    <label for="remember" class="ml-2 text-gray-300">Remember me</label>
+                </div>
+                <a href="{{ url_for('forgot_password') if 'forgot_password' in endpoints else url_for('login') }}" class="text-blue-400 hover:text-blue-300">Forgot password?</a>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                Login
+            </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">
+                Don't have an account? 
+                <a href="{{ url_for('signup') }}" class="text-blue-400 hover:text-blue-300">Sign up</a>
+            </p>
         </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
