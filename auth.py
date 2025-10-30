@@ -8,6 +8,11 @@ from datetime import datetime, timedelta
 import json
 import os
 from dotenv import load_dotenv
+import bcrypt
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 load_dotenv()
 
@@ -46,18 +51,21 @@ def login_required(f):
 
 def handle_signup(email, password, username):
     try:
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
         # Store user data in Supabase
         data = {
             'email': email,
             'username': username,
-            'password': password,  # Note: Hash this in production
+            'password': hashed_password.decode('utf-8'),  # Store hashed password
             'created_at': str(datetime.utcnow())
         }
         
         result = supabase.table('users').insert(data).execute()
         return True
     except Exception as e:
-        print(f"Signup error: {e}")
+        logging.error(f"Signup error: {e}")
         return False
 
 def handle_login(email, password):
@@ -67,11 +75,12 @@ def handle_login(email, password):
         
         if result.data:
             user = result.data[0]
-            if user['password'] == password:  # Use proper password hashing in production
+            # Verify the password
+            if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
                 return True
         return False
     except Exception as e:
-        print(f"Login error: {e}")
+        logging.error(f"Login error: {e}")
         return False
 
 def handle_password_reset(email):

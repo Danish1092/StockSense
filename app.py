@@ -1,10 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_session import Session
 from auth import login_required, handle_login, handle_signup
 from datetime import datetime
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
+
+# Configure session management
+app.config['SESSION_TYPE'] = 'filesystem'  # Store session data in the file system
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True  # Protect against session tampering
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # Session lifetime in seconds (1 hour)
+Session(app)
 
 # Import market data functions
 from market_data import get_market_movers_cached, format_number_wrapper
@@ -19,7 +31,7 @@ def index():
                              losers=losers, 
                              format_number=format_number_wrapper)
     except Exception as e:
-        print(f"Error fetching market data: {e}")
+        logging.error(f"Error fetching market data: {e}")
         return render_template('index.html', gainers=[], losers=[])
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -50,6 +62,7 @@ def signup():
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('You have been logged out.')
     return redirect(url_for('login'))
 
 @app.route('/dashboard')
@@ -85,10 +98,12 @@ def top_losers():
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
+    logging.warning(f"404 error: {error}")
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(error):
+    logging.error(f"500 error: {error}")
     return render_template('errors/500.html'), 500
 
 if __name__ == '__main__':
