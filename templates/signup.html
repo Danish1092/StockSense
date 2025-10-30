@@ -1,30 +1,77 @@
 {% extends "base.html" %}
 {% block title %}Sign Up - StockSense{% endblock %}
+{% block styles %}
+<style>
+    body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #232a4d 0%, #3a3f6e 100%);
+    }
+    .signup-container {
+        min-height: calc(100vh - 64px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    .signup-card {
+        background: rgba(44, 62, 106, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 420px;
+        padding: 2.5rem 2rem;
+    }
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
+        color: #232a4d;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    .form-input:focus {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.3);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        font-weight: 600;
+    }
+    .signup-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgb(37, 99, 235);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .signup-btn:hover {
+        background: rgb(29, 78, 216);
+        transform: translateY(-1px);
+    }
+    .link-blue {
+        color: rgb(96, 165, 250);
+        transition: all 0.3s ease;
+    }
+    .link-blue:hover {
+        color: rgb(147, 197, 253);
+    }
+</style>
+{% endblock %}
 {% block content %}
-    {% include 'navbar.html' %}
-    <div class="flex items-center justify-center min-h-screen p-6">
-        <div class="glass-effect w-full max-w-md p-8 rounded-lg">
-            <h2 class="text-2xl font-bold text-white mb-6 text-center">Create Account</h2>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="p-4 mb-4 rounded-lg {% if category == 'error' %}bg-red-500/20 text-red-200{% else %}bg-green-500/20 text-green-200{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <form method="POST" class="space-y-6">
-                <div>
-                    <label class="block text-gray-300 mb-2" for="username">Username</label>
-{% extends "base.html" %}
-{% block title %}Sign Up - StockSense{% endblock %}
-{% block content %}
-<div class="flex items-center justify-center min-h-screen p-6">
-    <div class="glass-effect w-full max-w-md p-8 rounded-lg">
-        <h2 class="text-2xl font-bold text-white mb-6 text-center">Create Account</h2>
+<div class="signup-container">
+    <div class="signup-card">
+        <h2 class="text-2xl font-bold text-white text-center mb-8">Create Account</h2>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -35,49 +82,26 @@
             {% endif %}
         {% endwith %}
         <form method="POST" class="space-y-6">
-            <div>
-                <label class="block text-gray-300 mb-2" for="username">Username</label>
-                <input type="text" id="username" name="username" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
+            <div class="space-y-1">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" required class="form-input" placeholder="Enter your username">
             </div>
-            <div>
-                <label class="block text-gray-300 mb-2" for="email">Email</label>
-                <input type="email" id="email" name="email" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
+            <div class="space-y-1">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" required class="form-input" placeholder="Enter your email">
             </div>
-            <div>
-                <label class="block text-gray-300 mb-2" for="password">Password</label>
-                <input type="password" id="password" name="password" required class="w-full p-3 rounded-lg bg-gray-800/50 text-white">
+            <div class="space-y-1">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" required class="form-input" placeholder="Enter your password">
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg">Sign Up</button>
+            <button type="submit" class="signup-btn mt-6">Create Account</button>
         </form>
+        <div class="mt-6 text-center text-white/80">
+            <p class="text-sm">Already have an account? <a href="{{ url_for('login') }}" class="link-blue font-medium">Login</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}
-                    <input type="text" id="username" name="username" required
-                           class="w-full p-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 mb-2" for="email">Email</label>
-                    <input type="email" id="email" name="email" required
-                           class="w-full p-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-300 mb-2" for="password">Password</label>
-                    <input type="password" id="password" name="password" required
-                           class="w-full p-3 rounded-lg bg-gray-800/50 border border-gray-700 text-white">
-                </div>
-                <button type="submit" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                    Create Account
-                </button>
-            </form>
-
-            <div class="mt-6 text-center">
-                <p class="text-gray-400">
-                    Already have an account? 
-                    <a href="{{ url_for('login') }}" class="text-blue-400 hover:text-blue-300">Login</a>
-                </p>
-            </div>
-        </div>
     </div>
 </body>
 </html>

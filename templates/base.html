@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}StockSense{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Custom CSS removed -->
     {% block styles %}{% endblock %}
 </head>
-<body class="market-bg min-h-screen text-gray-800">
+<body class="market-bg min-h-screen">
     <!-- Navbar -->
     <nav class="bg-navy-900 text-white py-4">
         <div class="container mx-auto px-4">
@@ -41,27 +41,30 @@
                     {% if 'user_id' in session %}
                         <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Logout</a>
                     {% else %}
-                        <a href="/login" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Sign In</a>
+                        <a href="{{ url_for('login') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Sign In</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="relative z-10">
+    <main>
         {% block content %}{% endblock %}
-        
-        <!-- Footer Section -->
-        <footer class="market-bg text-white py-12">
-            <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <!-- Company Info -->
-                    <div class="md:col-span-2">
-                        <h3 class="text-2xl font-bold mb-4">StockSense</h3>
-                        <p class="text-gray-300 text-sm leading-relaxed mb-6">
-                            Your trusted partner for intelligent stock market analysis and predictions.
-                        </p>
-                    </div>
+    </main>
+
+    <footer>
+    </footer>
+    <!-- Footer Section -->
+    <footer class="market-bg text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="md:col-span-2">
+                    <h3 class="text-2xl font-bold mb-4">StockSense</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">
+                        Your trusted partner for intelligent stock market analysis and predictions.
+                    </p>
+                </div>
 
                     <!-- Contact Info -->
                     <div>

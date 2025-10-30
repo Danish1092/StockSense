@@ -1,11 +1,29 @@
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, redirect, url_for, session
 import yfinance as yf
 import requests
 from app import app
+from auth import handle_login, handle_signup
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        return handle_login()
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        return handle_signup()
+    return render_template('signup.html')
 
 @app.route('/research')
 def research_page():

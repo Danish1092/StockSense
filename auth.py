@@ -57,8 +57,7 @@ def handle_signup(email, password, username):
         # Store user data in Supabase
         data = {
             'email': email,
-            'username': username,
-            'password': hashed_password.decode('utf-8'),  # Store hashed password
+            'password_hash': hashed_password.decode('utf-8'),  # Store hashed password
             'created_at': str(datetime.utcnow())
         }
         
