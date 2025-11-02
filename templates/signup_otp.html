@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Verify Email - StockSense{% endblock %}
+{% block content %}
+<div class="signup-container">
+    <div class="signup-card">
+        <h2 class="text-2xl font-bold text-white text-center mb-8">Verify Your Email</h2>
+        {% if error %}
+            <div class="p-4 mb-4 rounded-lg bg-red-500/20 text-red-200">{{ error }}</div>
+        {% elif message %}
+            <div class="p-4 mb-4 rounded-lg bg-green-500/20 text-green-200">{{ message }}</div>
+        {% endif %}
+        <form method="POST" class="space-y-6">
+            <div class="space-y-1">
+                <label for="otp" class="form-label">Enter Verification Code</label>
+                <input type="text" id="otp" name="otp" required class="form-input" placeholder="6-digit code">
+            </div>
+            <button type="submit" class="signup-btn mt-6">Verify & Create Account</button>
+        </form>
+        <div class="mt-6 text-center text-white/80">
+            <p class="text-sm">Didn't get the code? <a href="{{ url_for('signup') }}" class="link-blue font-medium">Resend</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

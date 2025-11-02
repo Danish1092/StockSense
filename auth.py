@@ -16,11 +16,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 load_dotenv()
 
-# Initialize Supabase client
-supabase = create_client(
-    os.getenv('SUPABASE_URL'),
-    os.getenv('SUPABASE_KEY')
-)
+
+# Use supabase client from config.py
+from config import supabase
 
 email_service = EmailService()
 
@@ -49,33 +47,70 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def handle_signup(email, password, username):
+def handle_signup_request(email, password, username):
+    """
+    Step 1: Called when user submits signup form. Generates OTP, sends email, stores data in session.
+    """
     try:
-        # Hash the password
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        # Check if user already exists
+        result = supabase.table('users').select('id').eq('email', email).execute()
+        if result.data:
+            return False, "Email already registered."
 
-        # Store user data in Supabase
-        data = {
+        otp = generate_verification_code()
+        # Store signup data and OTP in session
+        session['pending_signup'] = {
             'email': email,
-            'password_hash': hashed_password.decode('utf-8'),  # Store hashed password
-            'created_at': str(datetime.utcnow())
+            'password': password,
+            'username': username,
+            'otp': otp,
+            'otp_expires': (datetime.utcnow() + timedelta(minutes=10)).isoformat()
         }
-        
-        result = supabase.table('users').insert(data).execute()
-        return True
+        # Send OTP email
+        email_service.send_verification_email(email, otp)
+        return True, "Verification code sent to your email."
     except Exception as e:
-        logging.error(f"Signup error: {e}")
-        return False
+        logging.error(f"Signup request error: {e}")
+        return False, "Failed to send verification code."
+
+def handle_signup_otp(otp_input):
+    """
+    Step 2: Called when user submits OTP. Verifies OTP and creates user if valid.
+    """
+    try:
+        pending = session.get('pending_signup')
+        if not pending:
+            return False, "No signup in progress. Please start again."
+        if datetime.utcnow() > datetime.fromisoformat(pending['otp_expires']):
+            session.pop('pending_signup', None)
+            return False, "Verification code expired. Please sign up again."
+        if otp_input != pending['otp']:
+            return False, "Invalid verification code."
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(pending['password'].encode('utf-8'), bcrypt.gensalt())
+        data = {
+            'email': pending['email'],
+            'password_hash': hashed_password.decode('utf-8'),
+            'full_name': pending['username'],
+            'created_at': str(datetime.utcnow()),
+            'updated_at': str(datetime.utcnow())
+        }
+        supabase.table('users').insert(data).execute()
+        session.pop('pending_signup', None)
+        return True, "Account created successfully."
+    except Exception as e:
+        logging.error(f"Signup OTP error: {e}")
+        return False, "Failed to create account."
 
 def handle_login(email, password):
     try:
         # Query user from Supabase
         result = supabase.table('users').select('*').eq('email', email).execute()
-        
         if result.data:
             user = result.data[0]
-            # Verify the password
-            if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            # Verify the password using 'password_hash' field
+            if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                 return True
         return False
     except Exception as e:
