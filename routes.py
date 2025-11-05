@@ -1,3 +1,5 @@
+
+
 from flask import render_template, jsonify, request, redirect, url_for, session, flash
 import yfinance as yf
 import requests
@@ -6,6 +8,28 @@ from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
 from auth import handle_login, handle_signup_request, handle_signup_otp
+from config import NEWS_API_KEY
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+# Predict and Info routes
+@app.route('/predict')
+def predict():
+    # Placeholder: update this list with your 10 company names later
+    companies = [
+        'TCS.NS', 'RELIANCE.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
+        'SBIN.NS', 'ITC.NS', 'LT.NS', 'AXISBANK.NS', 'BHARTIARTL.NS'
+    ]
+    return render_template('predict.html', companies=companies)
+
+@app.route('/info')
+def info():
+    company = request.args.get('company')
+    if not company:
+        return redirect(url_for('predict'))
+    # In the future, fetch real data for the company here
+    return render_template('info.html', company_name=company)
 
 
 # Home page with market movers
@@ -25,8 +49,14 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         if email and password:
+            # Query user from Supabase to get username
+            from config import supabase
+            result = supabase.table('users').select('full_name').eq('email', email).execute()
+            username = result.data[0]['full_name'] if result.data and result.data[0].get('full_name') else email
+            from auth import handle_login
             if handle_login(email, password):
                 session['user_email'] = email
+                session['username'] = username
                 return redirect(url_for('index'))
         flash('Invalid credentials')
     return render_template('login.html')
@@ -146,6 +176,47 @@ def top_losers_page():
 @app.route('/demat-guide')
 def demat_guide():
     return render_template('demat_guide.html')
+
+# News route
+@app.route('/news')
+def news():
+    region = request.args.get('region', 'india')
+
+    if region == "india":
+        # Indian stock market news from trusted media
+        url = "https://newsapi.org/v2/everything"
+        query = "Indian stock market OR Sensex OR Nifty OR NSE OR BSE OR finance OR business"
+        params = {
+            "q": query,
+            "language": "en",
+            "sortBy": "publishedAt",
+            "apiKey": NEWS_API_KEY,
+            "pageSize": 30,
+            "domains": "economictimes.indiatimes.com,moneycontrol.com,business-standard.com,livemint.com,financialexpress.com"
+        }
+    else:
+        # Global stock market news from reliable global media
+        url = "https://newsapi.org/v2/everything"
+        query = "global stock market OR S&P 500 OR Nasdaq OR Dow Jones OR Wall Street"
+        params = {
+            "q": query,
+            "language": "en",
+            "sortBy": "publishedAt",
+            "apiKey": NEWS_API_KEY,
+            "pageSize": 30,
+            "domains": "reuters.com,bloomberg.com,finance.yahoo.com,marketwatch.com,cnbc.com"
+        }
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    # Filter: remove articles without images or from unwanted domains (like biztoc)
+    articles = [
+        a for a in data.get("articles", [])
+        if a.get("urlToImage") and "biztoc.com" not in (a.get("url") or "")
+    ]
+
+    return render_template("news.html", articles=articles, region=region)
 
 # Error handlers
 @app.errorhandler(404)

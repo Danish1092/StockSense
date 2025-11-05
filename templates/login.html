@@ -3,93 +3,16 @@
 
 {% block title %}Login - StockSense{% endblock %}
 
-{% block styles %}
-<style>
-    body {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #232a4d 0%, #3a3f6e 100%);
-    }
-    .login-container {
-        min-height: calc(100vh - 64px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-    }
-    .login-card {
-        background: rgba(44, 62, 106, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-        border-radius: 16px;
-        width: 100%;
-        max-width: 420px;
-        padding: 2.5rem 2rem;
-    }
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        background: rgba(255, 255, 255, 0.18);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 8px;
-        color: #232a4d;
-        font-weight: 500;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-    }
-    .form-input:focus {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-    }
-    .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #fff;
-        font-weight: 600;
-    }
-    .remember-me-checkbox {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.1);
-    }
-    .login-btn {
-        width: 100%;
-        padding: 0.75rem;
-        background: rgb(37, 99, 235);
-        color: white;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    .login-btn:hover {
-        background: rgb(29, 78, 216);
-        transform: translateY(-1px);
-    }
-    .link-blue {
-        color: rgb(96, 165, 250);
-        transition: all 0.3s ease;
-    }
-    .link-blue:hover {
-        color: rgb(147, 197, 253);
-    }
-</style>
-{% endblock %}
+{% block styles %}{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <h2 class="text-2xl font-bold text-white text-center mb-8">Welcome Back</h2>
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="bg-white/90 rounded-xl shadow-lg p-8 w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-8 text-blue-900">Welcome Back</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="p-4 mb-6 bg-red-500/20 text-red-200 rounded-lg text-center">
+                    <div class="p-4 mb-6 bg-red-500/20 text-red-700 rounded-lg text-center">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -97,23 +20,23 @@
         {% endwith %}
         <form method="POST" class="space-y-6">
             <div class="space-y-1">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" id="email" name="email" required class="form-input" placeholder="Enter your email">
+                <label for="email" class="block mb-1 font-semibold text-gray-700">Email Address</label>
+                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your email">
             </div>
             <div class="space-y-1">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" required class="form-input" placeholder="Enter your password">
+                <label for="password" class="block mb-1 font-semibold text-gray-700">Password</label>
+                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your password">
             </div>
-            <div class="flex items-center justify-between mt-6">
+            <div class="flex items-center justify-between mt-2">
                 <div class="flex items-center">
-                    <input type="checkbox" id="remember" name="remember" class="remember-me-checkbox">
-                    <label for="remember" class="ml-2 text-sm text-white/80">Remember me</label>
+                    <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded border-gray-300">
+                    <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
                 </div>
-                <a href="{{ url_for('forgot_password') if 'forgot_password' in endpoints else url_for('login') }}" class="text-sm link-blue">Forgot password?</a>
+                <a href="{{ url_for('forgot_password') if 'forgot_password' in endpoints else url_for('login') }}" class="text-sm text-blue-500 hover:underline">Forgot password?</a>
             </div>
-            <button type="submit" class="login-btn mt-6">Sign In</button>
-            <div class="mt-6 text-center text-white/80">
-                <p class="text-sm">Don't have an account? <a href="{{ url_for('signup') }}" class="link-blue font-medium">Create Account</a></p>
+            <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition">Sign In</button>
+            <div class="mt-6 text-center text-gray-600">
+                <p class="text-sm">Don't have an account? <a href="{{ url_for('signup') }}" class="text-blue-500 font-medium hover:underline">Create Account</a></p>
             </div>
         </form>
     </div>

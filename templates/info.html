@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Company Info - StockSense{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-black py-8 px-2">
+    <h1 class="text-4xl font-extrabold text-green-400 mb-8 text-center tracking-wide drop-shadow-lg">{{ company_name }}</h1>
+    <div class="flex flex-col md:flex-row gap-8 w-full max-w-[1600px] mx-auto" x-data="{ tab: '' }">
+        <!-- Chart Section -->
+        <div :class="tab ? 'flex-1' : 'w-full'" class="transition-all duration-500 flex flex-col items-center">
+            <div :class="tab ? 'max-w-2xl' : 'max-w-5xl'" class="bg-black/70 backdrop-blur-md rounded-2xl p-8 w-full h-96 flex items-center justify-center shadow-2xl border-2 border-green-700/40 transition-all duration-500">
+                <span class="text-green-200 text-3xl font-semibold opacity-90">[Chart Placeholder]</span>
+            </div>
+            <div class="flex flex-row gap-8 mt-8 w-full justify-center">
+                <button @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
+                <button @click="tab = 'news'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">news</button>
+                <button @click="tab = 'chatbot'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">chatbot</button>
+            </div>
+        </div>
+        <!-- Dynamic Section -->
+        <template x-if="tab">
+            <div class="flex-1 min-w-[320px] max-w-lg transition-all duration-500 flex items-center">
+                <div class="w-full relative">
+                    <button @click="tab = ''" class="absolute top-4 right-4 px-3 py-1 bg-green-900 text-green-200 border border-green-600 rounded hover:bg-green-700 transition text-sm font-semibold">Hide ✕</button>
+                    <template x-if="tab === 'predict'">
+                        <div class="bg-black rounded-2xl p-8 shadow-2xl border border-green-700 w-full">
+                            <h2 class="text-2xl font-bold mb-2 text-green-400">Predict Price</h2>
+                            <p class="text-green-200">Prediction tools and results for <strong>{{ company_name }}</strong> will appear here.</p>
+                        </div>
+                    </template>
+                    <template x-if="tab === 'news'">
+                        <div class="bg-black rounded-2xl p-8 shadow-2xl border border-green-700 w-full">
+                            <h2 class="text-2xl font-bold mb-2 text-green-400">Market News</h2>
+                            <p class="text-green-200">Latest news for <strong>{{ company_name }}</strong> will appear here.</p>
+                        </div>
+                    </template>
+                    <template x-if="tab === 'chatbot'">
+                        <div class="bg-black rounded-2xl p-8 shadow-2xl border border-green-700 w-full">
+                            <h2 class="text-2xl font-bold mb-2 text-green-400">AI Chatbot</h2>
+                            <p class="text-green-200">Chatbot for <strong>{{ company_name }}</strong> will appear here.</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{% endblock %}

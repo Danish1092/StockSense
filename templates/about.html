@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+    <style>
+        /* Base styles for glass effects */
+        .glass-effect {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 179, 237, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 179, 237, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.95), rgba(17, 24, 39, 0.95));
+        }
+        body {
+            background: linear-gradient(45deg, #000000, #1a365d);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            h2 {
+                font-size: 1.75rem !important;
+            }
+            h3 {
+                font-size: 1.25rem !important;
+            }
+            p {
+                font-size: 1rem !important;
+            }
+        }
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 1.5rem !important;
+                margin: 0.5rem 0 !important;
+            }
+            a, button {
+                padding: 0.75rem !important;
+            }
+        }
+        @media (hover: hover) {
+            .glass-card:hover {
+                transform: translateY(-5px);
+            }
+        }
+        @media (hover: none) {
+            .glass-card:active {
+                transform: translateY(-2px);
+            }
+        }
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <div class="glass-effect border-b border-blue-900/20 text-blue-100 py-12 sm:py-20">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold text-blue-200 leading-tight tracking-wide">StockSense</h1>
+        </div>
+    </div>
+
+    <!-- Project Overview Section -->
+    <div class="max-w-6xl mx-auto px-4 py-8 sm:py-16">
+        <div class="glass-card rounded-xl p-6 sm:p-8 hover:shadow-blue-900/20">
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6 tracking-wide">About StockSense</h2>
+            <div class="space-y-8 text-blue-200">
+                <div class="flex items-start space-x-6 hover:translate-x-2 transition-transform duration-300">
+                    <div class="bg-blue-800/40 p-4 rounded-lg glass-effect">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Historical Data Analysis</h3>
+                        <p>We analyze years of historical stock data, including price movements, trading volumes, and market trends to identify patterns and correlations.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-800 p-3 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2 text-blue-300">Machine Learning Models</h3>
+                        <p>Our advanced ML algorithms process multiple data points including market sentiment, company financials, and global economic indicators to generate accurate predictions.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-800 p-3 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Real-time Analysis</h3>
+                        <p>Our system continuously monitors market conditions and updates predictions in real-time, helping investors make informed decisions quickly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vision & Mission Section -->
+    <div class="max-w-6xl mx-auto px-4 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Vision -->
+            <div class="glass-card rounded-xl p-8 transform transition duration-500 hover:scale-105">
+                <div class="flex items-center mb-6">
+                    <div class="bg-blue-800/40 p-4 rounded-lg mr-4 glass-effect">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-blue-400">Vision</h2>
+                </div>
+                <p class="text-blue-200 text-lg leading-relaxed">
+                    To revolutionize stock market investment by making data-driven predictions accessible to everyone. We envision a future where investors of all levels can make informed decisions backed by advanced AI technology and comprehensive market analysis.
+                </p>
+            </div>
+
+            <!-- Mission -->
+            <div class="glass-card rounded-xl p-8 transform transition duration-500 hover:scale-105">
+                <div class="flex items-center mb-6">
+                    <div class="bg-blue-800/40 p-4 rounded-lg mr-4 glass-effect">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-blue-400">Mission</h2>
+                </div>
+                <p class="text-blue-200 text-lg leading-relaxed">
+                    To provide accurate, timely, and actionable stock market insights through advanced machine learning algorithms and comprehensive data analysis. We're committed to democratizing financial intelligence and helping investors make smarter investment decisions.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contributors Section -->
+    <div class="max-w-6xl mx-auto px-4 py-16">
+        <div class="glass-card rounded-xl p-8 transform hover:shadow-blue-900/20">
+            <h2 class="text-3xl font-bold text-blue-300 mb-12 text-center tracking-wide">Contributors</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <!-- ML Model -->
+                <div class="glass-effect rounded-xl p-4 sm:p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-blue-800/40 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-12 h-12 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                    <a href="https://www.linkedin.com/in/narasareddy-annepu-17a233319" target="_blank" rel="noopener noreferrer" 
+                       class="group inline-block">
+                        <h3 class="text-xl font-semibold text-blue-300 mb-3">Narasareddy</h3>
+                    </a>
+                    <a href="https://www.linkedin.com/in/narasareddy-annepu-17a233319" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center w-7 h-7 bg-[#0A66C2] rounded hover:bg-[#0A66C2]/90 transition-all duration-300 group">
+                        <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                    <p class="text-blue-200 opacity-90 mt-3">ML Model</p>
+                </div>
+
+                <!-- Backend -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <div class="w-24 h-24 mx-auto bg-blue-800/40 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-12 h-12 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3 3h10c1.5 0 3-1 3-3V7c0-2-1.5-3-3-3H7c-1.5 0-3 1-3 3z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17l6-6"></path>
+                        </svg>
+                    </div>
+                    <a href="https://www.linkedin.com/in/syed-danish-354259251" target="_blank" rel="noopener noreferrer" 
+                       class="group inline-block">
+                        <h3 class="text-xl font-semibold text-blue-300 mb-3">Syed Danish</h3>
+                    </a>
+                    <a href="https://www.linkedin.com/in/syed-danish-354259251" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center w-7 h-7 bg-[#0A66C2] rounded hover:bg-[#0A66C2]/90 transition-all duration-300 group">
+                        <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                    <p class="text-blue-200 opacity-90 mt-3">Backend</p>
+                </div>
+
+                <!-- Frontend - Owais -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <div class="w-24 h-24 mx-auto bg-blue-800/40 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-12 h-12 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                        </svg>
+                    </div>
+                    <a href="https://www.linkedin.com/in/owais-ahmed-083b33313" target="_blank" rel="noopener noreferrer" 
+                       class="group inline-block">
+                        <h3 class="text-xl font-semibold text-blue-300 mb-3">Owais Ahmed</h3>
+                    </a>
+                    <a href="https://www.linkedin.com/in/owais-ahmed-083b33313" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center w-7 h-7 bg-[#0A66C2] rounded hover:bg-[#0A66C2]/90 transition-all duration-300 group">
+                        <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                    <p class="text-blue-200 opacity-90 mt-3">Frontend</p>
+                </div>
+
+                <!-- Frontend - Priyanka -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <div class="w-24 h-24 mx-auto bg-blue-800/40 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-12 h-12 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <a href="https://www.linkedin.com/in/priyanka-shellagi-5ba4a42a5" target="_blank" rel="noopener noreferrer" 
+                       class="group inline-block">
+                        <h3 class="text-xl font-semibold text-blue-300 mb-3">Priyanka</h3>
+                    </a>
+                    <a href="https://www.linkedin.com/in/priyanka-shellagi-5ba4a42a5" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center justify-center w-7 h-7 bg-[#0A66C2] rounded hover:bg-[#0A66C2]/90 transition-all duration-300 group">
+                        <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+                    <p class="text-blue-200 opacity-90 mt-3">Frontend</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="glass-effect py-8 sm:py-16 mt-8 sm:mt-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-200 mb-4 sm:mb-8">Get Started with StockSense</h2>
+            <p class="text-blue-200 mb-6 sm:mb-8 text-base sm:text-lg">Ready to transform your investment strategy with AI-powered insights?</p>
+            <a href="#" class="inline-block glass-effect text-blue-100 px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-blue-600/30 active:bg-blue-600/40 transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-blue-500/20 touch-manipulation">
+                Try StockSense Now
+            </a>
+        </div>
+    </div>
+{% endblock %}
