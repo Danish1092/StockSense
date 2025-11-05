@@ -6,8 +6,28 @@
     <div class="flex flex-col md:flex-row gap-8 w-full max-w-[1600px] mx-auto" x-data="{ tab: '' }">
         <!-- Chart Section -->
         <div :class="tab ? 'flex-1' : 'w-full'" class="transition-all duration-500 flex flex-col items-center">
-            <div :class="tab ? 'max-w-2xl' : 'max-w-5xl'" class="bg-black/70 backdrop-blur-md rounded-2xl p-8 w-full h-96 flex items-center justify-center shadow-2xl border-2 border-green-700/40 transition-all duration-500">
-                <span class="text-green-200 text-3xl font-semibold opacity-90">[Chart Placeholder]</span>
+            <div :class="tab ? 'max-w-2xl' : 'max-w-5xl'" class="bg-black/70 backdrop-blur-md rounded-2xl p-8 w-full h-96 flex flex-col items-center justify-center shadow-2xl border-2 border-green-700/40 transition-all duration-500 relative">
+                <div class="w-full flex justify-center mb-2">
+                    <div id="periodButtons" class="flex gap-2">
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="5d">5D</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="1mo">1M</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="6mo">6M</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="ytd">YTD</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="1y">1Y</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="5y">5Y</button>
+                        <button class="period-btn px-3 py-1 rounded text-green-200 border border-green-700 bg-black hover:bg-green-900 transition text-sm font-semibold" data-period="max">Max</button>
+                    </div>
+                </div>
+                <div id="chartLoading" class="absolute inset-0 flex items-center justify-center z-10">
+                    <svg class="animate-spin h-12 w-12 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                </div>
+                <canvas id="stockChart" class="w-full h-full"></canvas>
+                <div id="chartError" class="hidden absolute inset-0 flex items-center justify-center z-20">
+                    <span class="text-red-400 text-xl font-semibold">No data available for this stock.</span>
+                </div>
             </div>
             <div class="flex flex-row gap-8 mt-8 w-full justify-center">
                 <button @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
@@ -46,4 +66,89 @@
 {% endblock %}
 {% block scripts %}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        const loading = document.getElementById('chartLoading');
+        const errorDiv = document.getElementById('chartError');
+        const symbol = {{ company_name|tojson }};
+        const periodButtons = document.querySelectorAll('.period-btn');
+        let chart;
+        let currentPeriod = 'max';
+
+        async function fetchAndRender(period) {
+            try {
+                loading.style.display = 'flex';
+                errorDiv.classList.add('hidden');
+                if (chart) { chart.destroy(); }
+                // Fetch historical data for selected period
+                const resp = await fetch(`/api/stock-history?symbol=${encodeURIComponent(symbol)}&period=${encodeURIComponent(period)}`);
+                const data = await resp.json();
+                let chartData = {
+                    labels: [],
+                    datasets: [{
+                        label: symbol + ' Close Price',
+                        data: [],
+                        borderColor: '#22d3a3',
+                        backgroundColor: 'rgba(34,211,163,0.1)',
+                        pointRadius: 0,
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                    }]
+                };
+                if (data.history && data.history.length > 0) {
+                    chartData.labels = data.history.map(d => d.x);
+                    chartData.datasets[0].data = data.history.map(d => d.y);
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: { unit: period === '1d' || period === '5d' ? 'day' : (period === '1mo' || period === '6mo' ? 'month' : 'year') },
+                                    ticks: { color: '#a7f3d0' },
+                                    grid: { color: 'rgba(34,211,163,0.1)' }
+                                },
+                                y: {
+                                    ticks: { color: '#a7f3d0' },
+                                    grid: { color: 'rgba(34,211,163,0.1)' }
+                                }
+                            }
+                        }
+                    });
+                    loading.style.display = 'none';
+                } else {
+                    loading.style.display = 'none';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (e) {
+                loading.style.display = 'none';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Button click handler
+        periodButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                periodButtons.forEach(b => b.classList.remove('border-green-400', 'bg-green-900', 'text-green-100'));
+                this.classList.add('border-green-400', 'bg-green-900', 'text-green-100');
+                currentPeriod = this.getAttribute('data-period');
+                fetchAndRender(currentPeriod);
+            });
+        });
+        // Set default (Max) active
+        periodButtons[periodButtons.length - 1].classList.add('border-green-400', 'bg-green-900', 'text-green-100');
+        fetchAndRender(currentPeriod);
+    });
+    </script>
 {% endblock %}

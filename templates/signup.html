@@ -2,40 +2,40 @@
 {% block title %}Sign Up - StockSense{% endblock %}
 {% block styles %}{% endblock %}
 {% block content %}
-<div class="min-h-[80vh] flex items-center justify-center">
-    <div class="bg-white/90 rounded-xl shadow-lg p-8 w-full max-w-md">
-        <h2 class="text-2xl font-bold text-center mb-8 text-blue-900">Create Account</h2>
+<div class="min-h-screen bg-black flex flex-col items-center justify-center py-12 px-2">
+    <div class="bg-black/80 backdrop-blur-md rounded-3xl shadow-2xl border border-green-700/40 p-10 w-full max-w-md mx-auto">
+        <h1 class="text-3xl font-extrabold text-green-400 text-center mb-8 tracking-wide drop-shadow">Create Your Account</h1>
         {% if error %}
-            <div class="p-4 mb-4 rounded-lg bg-red-500/20 text-red-700">{{ error }}</div>
+            <div class="p-4 mb-4 rounded-lg bg-red-700/20 text-red-400 text-center">{{ error }}</div>
         {% endif %}
         {% if message %}
-            <div class="p-4 mb-4 rounded-lg bg-green-500/20 text-green-700">{{ message }}</div>
+            <div class="p-4 mb-4 rounded-lg bg-green-700/20 text-green-400 text-center">{{ message }}</div>
         {% endif %}
         <form method="POST" class="space-y-6" id="signup-form">
             {% if not otp_sent %}
             <div class="space-y-1">
-                <label for="username" class="block mb-1 font-semibold text-gray-700">Username</label>
-                <input type="text" id="username" name="username" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your username" value="{{ username|default('') }}">
+                <label for="username" class="block mb-1 font-semibold text-green-300">Username</label>
+                <input type="text" id="username" name="username" required class="w-full px-4 py-2 border border-green-700 bg-black text-green-200 rounded-lg focus:ring-green-400 focus:border-green-400 placeholder-green-800" placeholder="Enter your username" value="{{ username|default('') }}">
             </div>
             <div class="space-y-1">
-                <label for="email" class="block mb-1 font-semibold text-gray-700">Email</label>
-                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your email" value="{{ email|default('') }}">
+                <label for="email" class="block mb-1 font-semibold text-green-300">Email</label>
+                <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-green-700 bg-black text-green-200 rounded-lg focus:ring-green-400 focus:border-green-400 placeholder-green-800" placeholder="Enter your email" value="{{ email|default('') }}">
             </div>
             <div class="space-y-1">
-                <label for="password" class="block mb-1 font-semibold text-gray-700">Password</label>
-                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter your password">
+                <label for="password" class="block mb-1 font-semibold text-green-300">Password</label>
+                <input type="password" id="password" name="password" required class="w-full px-4 py-2 border border-green-700 bg-black text-green-200 rounded-lg focus:ring-green-400 focus:border-green-400 placeholder-green-800" placeholder="Enter your password">
             </div>
-            <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition mt-4">Create Account</button>
+            <button type="submit" class="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition font-bold tracking-wide mt-4">Create Account</button>
             {% else %}
             <div class="space-y-1">
-                <label for="otp" class="block mb-1 font-semibold text-gray-700">Enter Verification Code <span class="text-blue-400">6-digit code</span></label>
-                <input type="text" id="otp" name="otp" required class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Enter OTP">
+                <label for="otp" class="block mb-1 font-semibold text-green-300">Enter Verification Code <span class="text-green-400">6-digit code</span></label>
+                <input type="text" id="otp" name="otp" required class="w-full px-4 py-2 border border-green-700 bg-black text-green-200 rounded-lg focus:ring-green-400 focus:border-green-400 placeholder-green-800" placeholder="Enter OTP">
             </div>
-            <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition mt-4">Verify &amp; Create Account</button>
+            <button type="submit" class="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition font-bold tracking-wide mt-4">Verify &amp; Create Account</button>
             {% endif %}
         </form>
-        <div class="mt-6 text-center text-gray-600">
-            <p class="text-sm">Already have an account? <a href="{{ url_for('login') }}" class="text-blue-500 font-medium hover:underline">Login</a></p>
+        <div class="mt-6 text-center">
+            <p class="text-sm text-green-300">Already have an account? <a href="{{ url_for('login') }}" class="text-green-400 font-medium hover:underline">Login</a></p>
         </div>
         <script>
         // Focus OTP input when shown

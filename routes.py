@@ -1,3 +1,9 @@
+from flask import jsonify
+import yfinance as yf
+
+# ...existing code...
+
+
 
 
 from flask import render_template, jsonify, request, redirect, url_for, session, flash
@@ -67,6 +73,16 @@ def logout():
     session.clear()
     flash('You have been logged out.')
     return redirect(url_for('login'))
+
+# Forgot password route
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        # TODO: Implement password reset logic here
+        flash('Password reset instructions have been sent to your email.')
+        return redirect(url_for('login'))
+    return render_template('forgot-password.html')
 
 # Dashboard
 from auth import login_required
@@ -254,3 +270,22 @@ def fetch_nse_data():
     except Exception as e:
         print(f"Error fetching data: {e}")
         return [], []
+# API endpoint for historical stock data (all time)
+@app.route('/api/stock-history')
+def stock_history():
+    symbol = request.args.get('symbol')
+    period = request.args.get('period', 'max')
+    if not symbol:
+        return jsonify({'error': 'No symbol provided'}), 400
+    try:
+        ticker = yf.Ticker(symbol)
+        # yfinance supports: 1d,5d,1mo,3mo,6mo,ytd,1y,2y,5y,10y,max
+        hist = ticker.history(period=period)
+        data = [
+            {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
+            for date, row in hist.iterrows()
+            if not (row['Close'] is None or row['Close'] != row['Close'])
+        ]
+        return jsonify({'symbol': symbol, 'history': data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
