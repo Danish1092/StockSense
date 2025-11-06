@@ -9,7 +9,11 @@ import yfinance as yf
 from flask import render_template, jsonify, request, redirect, url_for, session, flash
 import yfinance as yf
 import requests
+import pandas as pd
+import numpy as np
 from app import app
+from prediction_xgb import predict_price_xgb
+from prediction_lstm import predict_price_lstm
 from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
@@ -287,5 +291,32 @@ def stock_history():
             if not (row['Close'] is None or row['Close'] != row['Close'])
         ]
         return jsonify({'symbol': symbol, 'history': data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/predict')
+def predict_api():
+    symbol = request.args.get('symbol')
+    days = int(request.args.get('days', 7))
+    period = request.args.get('period', '1y')
+    # Use model from app config, but allow override from request
+    model_choice = int(request.args.get('model', app.config.get('DEFAULT_MODEL', 0)))
+
+    if not symbol:
+        return jsonify({'error': 'No symbol provided'}), 400
+
+    try:
+        if model_choice == 1:
+            result = predict_price_lstm(symbol, days=days, period=period)
+        else:
+            result = predict_price_xgb(symbol, days=days, period=period)
+        return jsonify(result)
+    except FileNotFoundError as e:
+        return jsonify({'error': str(e)}), 500
+    except ModuleNotFoundError as e:
+        return jsonify({'error': f'Failed to load model: {e}. Check environment.'}), 500
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500

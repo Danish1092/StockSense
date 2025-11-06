@@ -29,8 +29,8 @@
                     <span class="text-red-400 text-xl font-semibold">No data available for this stock.</span>
                 </div>
             </div>
-            <div class="flex flex-row gap-8 mt-8 w-full justify-center">
-                <button @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
+                <div class="flex flex-row gap-8 mt-8 w-full justify-center">
+                <button id="predictBtn" @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
                 <button @click="tab = 'news'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">news</button>
                 <button @click="tab = 'chatbot'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">chatbot</button>
             </div>
@@ -43,7 +43,21 @@
                     <template x-if="tab === 'predict'">
                         <div class="bg-black rounded-2xl p-8 shadow-2xl border border-green-700 w-full">
                             <h2 class="text-2xl font-bold mb-2 text-green-400">Predict Price</h2>
-                            <p class="text-green-200">Prediction tools and results for <strong>{{ company_name }}</strong> will appear here.</p>
+                            <p class="text-green-200 mb-4">Prediction results for <strong>{{ company_name }}</strong></p>
+                            <div id="predictPanel">
+                                <div id="predictLoading" class="hidden w-full flex items-center justify-center mb-4">
+                                    <svg class="animate-spin h-10 w-10 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                    </svg>
+                                </div>
+                                <div id="predictResults" class="hidden">
+                                    <div class="text-green-200 mb-2">Last close: <span id="lastClose" class="font-semibold"></span> (as of <span id="lastDate"></span>)</div>
+                                    <div class="text-green-200 mb-2">Predicted:</div>
+                                    <ul id="predList" class="list-disc list-inside text-green-200"></ul>
+                                </div>
+                                <div id="predictError" class="hidden text-red-400 font-semibold">Prediction failed. Try again later.</div>
+                            </div>
                         </div>
                     </template>
                     <template x-if="tab === 'news'">
@@ -77,6 +91,23 @@
         const periodButtons = document.querySelectorAll('.period-btn');
         let chart;
         let currentPeriod = 'max';
+        let lastPrediction = null; // Variable to store the last prediction
+
+        // Watch for the prediction panel being hidden and clear predictions
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('stockApp', () => ({
+                tab: '',
+                init() {
+                    this.$watch('tab', value => {
+                        if (value !== 'predict') {
+                            lastPrediction = null;
+                            removeExistingPredictionDataset();
+                            if (chart) chart.update();
+                        }
+                    });
+                }
+            }));
+        });
 
         async function fetchAndRender(period) {
             try {
@@ -127,6 +158,13 @@
                         }
                     });
                     loading.style.display = 'none';
+
+                    // --- FIX: Re-apply predictions if panel is open ---
+                    if (lastPrediction) {
+                        addPredictionsToChart(lastPrediction);
+                    }
+                    // --- End Fix ---
+
                 } else {
                     loading.style.display = 'none';
                     errorDiv.classList.remove('hidden');
@@ -149,6 +187,112 @@
         // Set default (Max) active
         periodButtons[periodButtons.length - 1].classList.add('border-green-400', 'bg-green-900', 'text-green-100');
         fetchAndRender(currentPeriod);
+
+        // Prediction: hook up predict button and panel
+        const predictBtn = document.getElementById('predictBtn');
+
+        // helper to wait for elements rendered by Alpine's x-if
+        async function waitForElements(ids, timeout = 1500) {
+            const start = Date.now();
+            while (Date.now() - start < timeout) {
+                const found = ids.map(id => document.getElementById(id));
+                if (found.every(el => el !== null)) return found;
+                await new Promise(r => setTimeout(r, 100));
+            }
+            return ids.map(id => document.getElementById(id));
+        }
+
+        function removeExistingPredictionDataset() {
+            if (!chart || !chart.data || !chart.data.datasets) return;
+            const idx = chart.data.datasets.findIndex(d => d && d.label && d.label.toLowerCase().includes('predicted'));
+            if (idx !== -1) {
+                chart.data.datasets.splice(idx, 1);
+            }
+        }
+
+        function addPredictionsToChart(predictions) {
+            if (!chart || !predictions || predictions.length === 0) return;
+            removeExistingPredictionDataset();
+
+            const dataset = {
+                label: 'Predicted',
+                data: predictions, // Use predictions directly
+                borderColor: '#f97316',
+                backgroundColor: 'rgba(249,115,22,0.06)',
+                pointRadius: 3,
+                borderWidth: 2,
+                borderDash: [6, 4],
+                tension: 0.2,
+                fill: false
+            };
+            chart.data.datasets.push(dataset);
+
+            // Adjust chart axis to show predictions
+            const lastPredictionDate = new Date(predictions[predictions.length - 1].x);
+            const lastHistoryDate = new Date(chart.data.labels[chart.data.labels.length - 1]);
+            
+            if (lastPredictionDate > lastHistoryDate) {
+                 chart.options.scales.x.max = lastPredictionDate.valueOf();
+            }
+
+            chart.update();
+        }
+
+        async function runPrediction(days = 7) {
+            // ensure panel elements are present (Alpine x-if renders them after tab change)
+            const [predictLoading, predictResults, predictError, predList, lastCloseEl, lastDateEl] = await waitForElements([
+                'predictLoading', 'predictResults', 'predictError', 'predList', 'lastClose', 'lastDate'
+            ], 2000);
+            if (!predictLoading || !predictResults || !predList) {
+                console.warn('Prediction UI elements not found; aborting prediction');
+                return;
+            }
+            predictError.classList.add('hidden');
+            predictResults.classList.add('hidden');
+            predList.innerHTML = '';
+            predictLoading.classList.remove('hidden');
+
+            try {
+                // include the currently selected period so backend uses the same history as the chart
+                const resp = await fetch(`/api/predict?symbol=${encodeURIComponent(symbol)}&days=${encodeURIComponent(days)}&period=${encodeURIComponent(currentPeriod)}`);
+                const json = await resp.json();
+                predictLoading.classList.add('hidden');
+                if (json.error) {
+                    predictError.textContent = json.error || 'Prediction failed';
+                    predictError.classList.remove('hidden');
+                    lastPrediction = null; // Clear stored prediction on error
+                    return;
+                }
+
+                // Show results
+                lastCloseEl.textContent = json.last_close ? json.last_close.toFixed(2) : 'N/A';
+                lastDateEl.textContent = json.last_date || '';
+                json.predictions.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = `${p.x}: ${Number(p.y).toFixed(2)}`;
+                    predList.appendChild(li);
+                });
+                predictResults.classList.remove('hidden');
+
+                // --- FIX: Store prediction and overlay on chart ---
+                lastPrediction = json.predictions;
+                addPredictionsToChart(lastPrediction);
+                // --- End Fix ---
+            } catch (e) {
+                predictLoading.classList.add('hidden');
+                predictError.textContent = 'Prediction failed. ' + (e && e.message ? e.message : '');
+                predictError.classList.remove('hidden');
+                lastPrediction = null; // Clear stored prediction on error
+            }
+        }
+
+        // Run prediction when the predict button is clicked (opens panel via Alpine and triggers prediction)
+        if (predictBtn) {
+            predictBtn.addEventListener('click', function() {
+                // small delay to let Alpine open the panel
+                setTimeout(() => runPrediction(7), 220);
+            });
+        }
     });
     </script>
 {% endblock %}

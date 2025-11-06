@@ -4,12 +4,20 @@ from auth import login_required, handle_login
 from datetime import datetime
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = SECRET_KEY
+
+# Set the default prediction model. 0 for XGBoost, 1 for LSTM.
+app.config['DEFAULT_MODEL'] = 0
 
 # Configure session management
 app.config['SESSION_TYPE'] = 'filesystem'  # Store session data in the file system
