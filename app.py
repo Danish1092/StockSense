@@ -14,6 +14,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
+
+# Provide a fallback SECRET_KEY if not set in the environment
+if not SECRET_KEY:
+    SECRET_KEY = 'fallback-secret-key'  # Replace with a strong, random key
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Set the default prediction model. 0 for XGBoost, 1 for LSTM.

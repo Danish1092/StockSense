@@ -111,11 +111,21 @@ def handle_login(email, password):
             user = result.data[0]
             # Verify the password using 'password_hash' field
             if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                return True
-        return False
+                # Update session with user details
+                session['user_email'] = user['email']
+                session['user_id'] = user['id']
+                session['user_name'] = user['full_name']
+                logging.info(f"User {email} logged in successfully.")
+                return True, "Login successful."
+            else:
+                logging.warning(f"Login failed for {email}: Incorrect password.")
+                return False, "Invalid email or password."
+        else:
+            logging.warning(f"Login failed for {email}: User not found.")
+            return False, "Invalid email or password."
     except Exception as e:
-        logging.error(f"Login error: {e}")
-        return False
+        logging.error(f"Login error for {email}: {e}")
+        return False, "An error occurred during login. Please try again later."
 
 def handle_password_reset(email):
     try:
