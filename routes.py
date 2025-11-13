@@ -17,7 +17,7 @@ from prediction_lstm import predict_price_lstm
 from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
-from auth import handle_login, handle_signup_request, handle_signup_otp
+from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
 from config import NEWS_API_KEY
 
 @app.route('/about')
@@ -59,16 +59,10 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         if email and password:
-            # Query user from Supabase to get username
-            from config import supabase
-            result = supabase.table('users').select('full_name').eq('email', email).execute()
-            username = result.data[0]['full_name'] if result.data and result.data[0].get('full_name') else email
-            from auth import handle_login
-            if handle_login(email, password):
-                session['user_email'] = email
-                session['username'] = username
+            success, msg = handle_login(email, password)
+            if success:
                 return redirect(url_for('index'))
-        flash('Invalid credentials')
+            flash(msg or 'Invalid credentials')
     return render_template('login.html')
 
 # Logout route
@@ -81,12 +75,60 @@ def logout():
 # Forgot password route
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    step = 'email'  # possible values: 'email', 'otp', 'password'
+    error = None
+    message = None
+
     if request.method == 'POST':
-        email = request.form.get('email')
-        # TODO: Implement password reset logic here
-        flash('Password reset instructions have been sent to your email.')
-        return redirect(url_for('login'))
-    return render_template('forgot-password.html')
+        # Step 1: user submitted email to request reset
+        if 'email' in request.form and request.form.get('email'):
+            email = request.form.get('email')
+            ok, msg = handle_password_reset(email)
+            if ok:
+                session['reset_email'] = email
+                step = 'otp'
+                message = 'OTP sent to your email.'
+            else:
+                error = msg or 'Failed to send reset email.'
+
+        # Step 2: user submitted otp
+        elif 'otp' in request.form and request.form.get('otp'):
+            otp = request.form.get('otp')
+            email = session.get('reset_email')
+            if not email:
+                error = 'Session expired. Please start again.'
+            else:
+                ok, msg = verify_reset_code(email, otp)
+                if ok:
+                    session['reset_verified'] = True
+                    step = 'password'
+                    message = 'OTP verified. Set your new password.'
+                else:
+                    error = msg or 'Invalid or expired code.'
+
+        # Step 3: user submitted new password
+        elif 'new_password' in request.form and request.form.get('new_password'):
+            new_password = request.form.get('new_password')
+            confirm = request.form.get('confirm_password')
+            email = session.get('reset_email')
+            if not session.get('reset_verified') or not email:
+                error = 'Unauthorized or session expired. Please request a new code.'
+            elif not new_password or new_password != confirm:
+                error = 'Passwords do not match.'
+                step = 'password'
+            else:
+                ok, msg = reset_user_password(email, new_password)
+                if ok:
+                    # cleanup session
+                    session.pop('reset_email', None)
+                    session.pop('reset_verified', None)
+                    flash('Password updated. Please log in with your new password.')
+                    return redirect(url_for('login'))
+                else:
+                    error = msg or 'Failed to update password.'
+                    step = 'password'
+
+    return render_template('forgot-password.html', step=step, error=error, message=message)
 
 # Dashboard
 from auth import login_required

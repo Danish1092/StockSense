@@ -114,7 +114,7 @@ def handle_login(email, password):
                 # Update session with user details
                 session['user_email'] = user['email']
                 session['user_id'] = user['id']
-                session['user_name'] = user['full_name']
+                session['username'] = user['full_name']
                 logging.info(f"User {email} logged in successfully.")
                 return True, "Login successful."
             else:
@@ -144,3 +144,45 @@ def handle_password_reset(email):
         
     except Exception as e:
         return False, str(e)
+
+
+def verify_reset_code(email, code):
+    """Verify the reset code for the given email. Returns (True, message) or (False, message)."""
+    try:
+        result = supabase.table('users').select('reset_code', 'reset_code_expires').eq('email', email).execute()
+        if not result.data:
+            return False, "Email not found"
+        user = result.data[0]
+        stored = user.get('reset_code')
+        expires = user.get('reset_code_expires')
+        if not stored:
+            return False, "No reset requested for this account"
+        if stored != code:
+            return False, "Invalid reset code"
+        # parse expiry
+        try:
+            exp_dt = datetime.fromisoformat(expires)
+        except Exception:
+            exp_dt = datetime.strptime(expires, '%Y-%m-%d %H:%M:%S') if expires else None
+        if exp_dt and datetime.utcnow() > exp_dt:
+            return False, "Reset code has expired"
+        return True, "Code verified"
+    except Exception as e:
+        logging.error(f"Error verifying reset code for {email}: {e}")
+        return False, "Verification failed"
+
+
+def reset_user_password(email, new_password):
+    """Hash and update the user's password, clear reset code fields."""
+    try:
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        supabase.table('users').update({
+            'password_hash': hashed_password,
+            'reset_code': None,
+            'reset_code_expires': None,
+            'updated_at': str(datetime.utcnow())
+        }).eq('email', email).execute()
+        return True, "Password updated"
+    except Exception as e:
+        logging.error(f"Error resetting password for {email}: {e}")
+        return False, "Failed to update password"
