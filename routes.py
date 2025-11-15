@@ -19,6 +19,7 @@ from datetime import datetime
 import logging
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
 from config import NEWS_API_KEY
+import time
 
 @app.route('/about')
 def about():
@@ -323,20 +324,68 @@ def stock_history():
     period = request.args.get('period', 'max')
     if not symbol:
         return jsonify({'error': 'No symbol provided'}), 400
-    try:
-        ticker = yf.Ticker(symbol)
-        # yfinance supports: 1d,5d,1mo,3mo,6mo,ytd,1y,2y,5y,10y,max
-        hist = ticker.history(period=period)
-        data = [
-            {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
-            for date, row in hist.iterrows()
-            if not (row['Close'] is None or row['Close'] != row['Close'])
-        ]
-        return jsonify({'symbol': symbol, 'history': data})
-    except Exception as e:
-        logging.exception(f"Error fetching history for {symbol}: {e}")
-        # Return a clear error message so front-end can display it
-        return jsonify({'error': str(e) or 'Failed to fetch stock history'}), 500
+    # Try multiple attempts and a fallback to yf.download for robustness
+    max_attempts = 3
+    last_exc = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            logging.info(f"Fetching history for {symbol}, attempt {attempt}/{max_attempts}, period={period}")
+            ticker = yf.Ticker(symbol)
+            # yfinance supports: 1d,5d,1mo,3mo,6mo,ytd,1y,2y,5y,10y,max
+            hist = ticker.history(period=period)
+            # If empty response, try a short retry
+            if hist is None or len(hist) == 0:
+                logging.warning(f"Empty history returned for {symbol} on attempt {attempt}")
+                last_exc = Exception('Empty history returned from yfinance')
+                if attempt < max_attempts:
+                    time.sleep(1)
+                    continue
+                # final attempt: try fallback
+                try:
+                    logging.info(f"Attempting yf.download fallback for {symbol}")
+                    hist = yf.download(symbol, period=period)
+                    logging.info(f"yf.download returned rows={0 if hist is None else len(hist)}")
+                except Exception as e2:
+                    logging.exception(f"yf.download fallback failed for {symbol}: {e2}")
+                    last_exc = e2
+            # If we have a DataFrame with rows, build the response
+            if hist is not None and len(hist) > 0:
+                try:
+                    data = [
+                        {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
+                        for date, row in hist.iterrows()
+                        if not (row['Close'] is None or row['Close'] != row['Close'])
+                    ]
+                except Exception as e:
+                    logging.exception(f"Error parsing history DataFrame for {symbol}: {e}")
+                    last_exc = e
+                    data = []
+
+                if data:
+                    return jsonify({'symbol': symbol, 'history': data})
+                else:
+                    logging.warning(f"No valid close price rows for {symbol} after parsing")
+                    last_exc = last_exc or Exception('No valid close price rows')
+                    break
+            else:
+                # No data after retries
+                break
+        except Exception as e:
+            logging.exception(f"Error fetching history for {symbol} on attempt {attempt}: {e}")
+            last_exc = e
+            if attempt < max_attempts:
+                time.sleep(1)
+                continue
+            break
+
+    # If we reach here, return a helpful error message for the frontend
+    err_msg = None
+    if last_exc:
+        err_msg = str(last_exc)
+    else:
+        err_msg = 'No historical data returned; check network or symbol.'
+    logging.error(f"Final failure fetching history for {symbol}: {err_msg}")
+    return jsonify({'error': err_msg}), 500
 
 
 @app.route('/api/predict')
