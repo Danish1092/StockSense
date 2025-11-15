@@ -17,9 +17,9 @@ from prediction_lstm import predict_price_lstm
 from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
+import time
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
 from config import NEWS_API_KEY
-import time
 
 @app.route('/about')
 def about():
@@ -324,68 +324,64 @@ def stock_history():
     period = request.args.get('period', 'max')
     if not symbol:
         return jsonify({'error': 'No symbol provided'}), 400
-    # Try multiple attempts and a fallback to yf.download for robustness
-    max_attempts = 3
-    last_exc = None
-    for attempt in range(1, max_attempts + 1):
+    
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
         try:
-            logging.info(f"Fetching history for {symbol}, attempt {attempt}/{max_attempts}, period={period}")
+            # Configure yfinance session with proper headers
             ticker = yf.Ticker(symbol)
+            ticker.session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive'
+            })
+            
             # yfinance supports: 1d,5d,1mo,3mo,6mo,ytd,1y,2y,5y,10y,max
-            hist = ticker.history(period=period)
-            # If empty response, try a short retry
-            if hist is None or len(hist) == 0:
-                logging.warning(f"Empty history returned for {symbol} on attempt {attempt}")
-                last_exc = Exception('Empty history returned from yfinance')
-                if attempt < max_attempts:
-                    time.sleep(1)
+            hist = ticker.history(period=period, timeout=10)
+            
+            if hist.empty:
+                logging.warning(f"Stock history API error: Empty history returned from yfinance for {symbol}")
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
                     continue
-                # final attempt: try fallback
-                try:
-                    logging.info(f"Attempting yf.download fallback for {symbol}")
-                    hist = yf.download(symbol, period=period)
-                    logging.info(f"yf.download returned rows={0 if hist is None else len(hist)}")
-                except Exception as e2:
-                    logging.exception(f"yf.download fallback failed for {symbol}: {e2}")
-                    last_exc = e2
-            # If we have a DataFrame with rows, build the response
-            if hist is not None and len(hist) > 0:
-                try:
-                    data = [
-                        {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
-                        for date, row in hist.iterrows()
-                        if not (row['Close'] is None or row['Close'] != row['Close'])
-                    ]
-                except Exception as e:
-                    logging.exception(f"Error parsing history DataFrame for {symbol}: {e}")
-                    last_exc = e
-                    data = []
-
-                if data:
-                    return jsonify({'symbol': symbol, 'history': data})
-                else:
-                    logging.warning(f"No valid close price rows for {symbol} after parsing")
-                    last_exc = last_exc or Exception('No valid close price rows')
-                    break
-            else:
-                # No data after retries
-                break
-        except Exception as e:
-            logging.exception(f"Error fetching history for {symbol} on attempt {attempt}: {e}")
-            last_exc = e
-            if attempt < max_attempts:
-                time.sleep(1)
+                return jsonify({'error': f'No data available for {symbol}. The symbol may be invalid or delisted.'}), 404
+            
+            data = [
+                {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
+                for date, row in hist.iterrows()
+                if not (row['Close'] is None or row['Close'] != row['Close'])
+            ]
+            
+            if not data:
+                logging.warning(f"Stock history API error: No valid price data for {symbol}")
+                return jsonify({'error': f'No valid price data for {symbol}'}), 404
+            
+            logging.info(f"Successfully fetched {len(data)} data points for {symbol}")
+            return jsonify({'symbol': symbol, 'history': data})
+            
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Network error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
                 continue
-            break
-
-    # If we reach here, return a helpful error message for the frontend
-    err_msg = None
-    if last_exc:
-        err_msg = str(last_exc)
-    else:
-        err_msg = 'No historical data returned; check network or symbol.'
-    logging.error(f"Final failure fetching history for {symbol}: {err_msg}")
-    return jsonify({'error': err_msg}), 500
+            return jsonify({'error': f'Network error: Unable to fetch data for {symbol}. Please check your internet connection.'}), 503
+            
+        except ValueError as e:
+            logging.error(f"Value error for {symbol}: {e}")
+            return jsonify({'error': f'Invalid data received for {symbol}'}), 400
+            
+        except Exception as e:
+            logging.error(f"Error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {str(e)}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            return jsonify({'error': f'Failed to fetch data for {symbol}: {str(e)}'}), 500
+    
+    return jsonify({'error': f'Failed to fetch data for {symbol} after {max_retries} attempts'}), 500
 
 
 @app.route('/api/predict')

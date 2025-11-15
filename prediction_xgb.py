@@ -4,48 +4,89 @@ import yfinance as yf
 from typing import Dict, Any
 import os
 import joblib
+import time
+import logging
+import requests
 
 def _get_features_df(symbol: str, period: str = '1y') -> pd.DataFrame:
     """Fetch yfinance history and calculate all features required by the model."""
-    ticker = yf.Ticker(symbol)
-    df = ticker.history(period=period)
-    if df.empty:
-        raise ValueError(f'No historical data from yfinance for symbol {symbol}')
+    max_retries = 3
+    retry_delay = 1
+    
+    for attempt in range(max_retries):
+        try:
+            ticker = yf.Ticker(symbol)
+            # Configure session with proper headers
+            ticker.session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+            })
+            
+            df = ticker.history(period=period, timeout=10)
+            
+            if df.empty:
+                logging.warning(f'Empty history from yfinance for symbol {symbol} (attempt {attempt + 1}/{max_retries})')
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                raise ValueError(f'No historical data from yfinance for symbol {symbol}. The symbol may be invalid or delisted.')
+            
+            # Calculate all indicators, preserving yfinance column names
+            df['Daily_Return'] = df['Close'].pct_change()
+            df['Log_Return'] = np.log1p(df['Daily_Return'])
+            df['MA10'] = df['Close'].rolling(10).mean()
+            df['MA20'] = df['Close'].rolling(20).mean()
+            df['MA50'] = df['Close'].rolling(50).mean()
+            df['EMA10'] = df['Close'].ewm(span=10, adjust=False).mean()
+            df['EMA20'] = df['Close'].ewm(span=20, adjust=False).mean()
+            df['Volatility'] = df['Daily_Return'].rolling(20).std()
 
-    # Calculate all indicators, preserving yfinance column names
-    df['Daily_Return'] = df['Close'].pct_change()
-    df['Log_Return'] = np.log1p(df['Daily_Return'])
-    df['MA10'] = df['Close'].rolling(10).mean()
-    df['MA20'] = df['Close'].rolling(20).mean()
-    df['MA50'] = df['Close'].rolling(50).mean()
-    df['EMA10'] = df['Close'].ewm(span=10, adjust=False).mean()
-    df['EMA20'] = df['Close'].ewm(span=20, adjust=False).mean()
-    df['Volatility'] = df['Daily_Return'].rolling(20).std()
+            # RSI
+            delta = df['Close'].diff()
+            gain = delta.where(delta > 0, 0).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            df['RSI'] = 100 - (100 / (1 + rs))
 
-    # RSI
-    delta = df['Close'].diff()
-    gain = delta.where(delta > 0, 0).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
-    df['RSI'] = 100 - (100 / (1 + rs))
+            # MACD
+            exp1 = df['Close'].ewm(span=12, adjust=False).mean()
+            exp2 = df['Close'].ewm(span=26, adjust=False).mean()
+            df['MACD'] = exp1 - exp2
+            df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
 
-    # MACD
-    exp1 = df['Close'].ewm(span=12, adjust=False).mean()
-    exp2 = df['Close'].ewm(span=26, adjust=False).mean()
-    df['MACD'] = exp1 - exp2
-    df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
+            # Bollinger Bands
+            df['BB_Middle'] = df['Close'].rolling(window=20).mean()
+            std = df['Close'].rolling(window=20).std()
+            df['BB_Upper'] = df['BB_Middle'] + (std * 2)
+            df['BB_Lower'] = df['BB_Middle'] - (std * 2)
 
-    # Bollinger Bands
-    df['BB_Middle'] = df['Close'].rolling(window=20).mean()
-    std = df['Close'].rolling(window=20).std()
-    df['BB_Upper'] = df['BB_Middle'] + (std * 2)
-    df['BB_Lower'] = df['BB_Middle'] - (std * 2)
-
-    # Ensure 'Adj Close' exists
-    if 'Adj Close' not in df.columns:
-        df['Adj Close'] = df['Close']
-
-    return df.dropna()
+            # Ensure 'Adj Close' exists
+            if 'Adj Close' not in df.columns:
+                df['Adj Close'] = df['Close']
+            
+            result = df.dropna()
+            if result.empty:
+                raise ValueError(f'Insufficient data after calculating indicators for {symbol}')
+            
+            logging.info(f'Successfully fetched and processed {len(result)} rows for {symbol}')
+            return result
+            
+        except requests.exceptions.RequestException as e:
+            logging.error(f'Network error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}')
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            raise ValueError(f'Network error: Unable to fetch data for {symbol}. Please check your internet connection.')
+            
+        except Exception as e:
+            logging.error(f'Error processing {symbol} (attempt {attempt + 1}/{max_retries}): {e}')
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            raise
+    
+    raise ValueError(f'Failed to fetch data for {symbol} after {max_retries} attempts')
 
 
 def predict_price_xgb(symbol: str, days: int = 7, period: str = '1y') -> Dict[str, Any]:
