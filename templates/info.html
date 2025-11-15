@@ -117,6 +117,15 @@
                 // Fetch historical data for selected period
                 const resp = await fetch(`/api/stock-history?symbol=${encodeURIComponent(symbol)}&period=${encodeURIComponent(period)}`);
                 const data = await resp.json();
+                // If API returned an error, show it in the chart error area for easier debugging
+                if (!resp.ok || (data && data.error)) {
+                    loading.style.display = 'none';
+                    const msg = (data && data.error) ? data.error : `Failed to fetch history (status ${resp.status})`;
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.innerHTML = `<span class="text-red-400 text-xl font-semibold">${msg}</span>`;
+                    console.error('Stock history API error:', msg, data);
+                    return;
+                }
                 let chartData = {
                     labels: [],
                     datasets: [{
@@ -172,6 +181,9 @@
             } catch (e) {
                 loading.style.display = 'none';
                 errorDiv.classList.remove('hidden');
+                const msg = (e && e.message) ? e.message : String(e);
+                errorDiv.innerHTML = `<span class="text-red-400 text-xl font-semibold">Fetch error: ${msg}</span>`;
+                console.error('Fetch exception while getting stock history:', e);
             }
         }
 

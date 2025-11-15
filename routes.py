@@ -334,7 +334,9 @@ def stock_history():
         ]
         return jsonify({'symbol': symbol, 'history': data})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logging.exception(f"Error fetching history for {symbol}: {e}")
+        # Return a clear error message so front-end can display it
+        return jsonify({'error': str(e) or 'Failed to fetch stock history'}), 500
 
 
 @app.route('/api/predict')
