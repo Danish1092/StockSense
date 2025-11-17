@@ -1,5 +1,46 @@
 # Troubleshooting Guide
 
+## API 500 Errors / Stock History Not Loading
+
+If you see a **500 error** in the browser console when trying to load stock charts:
+
+### Common Causes and Solutions
+
+#### 1. **yfinance Network Timeout**
+- **Problem**: yfinance request is taking too long or timing out
+- **Solution**: 
+  - Check your internet connection
+  - Disable VPN temporarily
+  - Clear your browser cache
+  - Try a different stock symbol to see if it's symbol-specific
+
+#### 2. **Yahoo Finance Server Issues**
+- **Problem**: Yahoo Finance servers may be temporarily unavailable or blocking requests
+- **Solution**: 
+  - Wait a few minutes and try again
+  - Check https://status.finance.yahoo.com for any known issues
+  - Try accessing https://finance.yahoo.com in your browser to verify connectivity
+
+#### 3. **Invalid Stock Symbol**
+- **Problem**: The symbol doesn't exist or is misspelled
+- **Solution**: 
+  - Verify the stock symbol is correct (e.g., TCS.NS, not TCS.N)
+  - Check Yahoo Finance website to confirm the symbol format
+  - Ensure you're using the correct exchange suffix (.NS for NSE, .BO for BSE)
+
+#### 4. **Missing Dependencies**
+- **Problem**: Required Python packages not installed or outdated
+- **Solution**: 
+  ```bash
+  pip install --upgrade yfinance pandas numpy requests
+  ```
+
+#### 5. **Check Server Logs**
+- **Problem**: Need to see what's actually failing
+- **Solution**: 
+  - Look at the Flask server console/terminal for detailed error messages
+  - The logs will show the exact exception and traceback
+
 ## Graphs Not Showing / yfinance Errors
 
 If you're experiencing issues where stock graphs are not displaying or you see errors like:

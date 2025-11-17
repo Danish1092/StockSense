@@ -330,6 +330,8 @@ def stock_history():
     
     for attempt in range(max_retries):
         try:
+            logging.info(f"Fetching stock history for {symbol} with period {period} (attempt {attempt + 1}/{max_retries})")
+            
             # Configure yfinance session with proper headers
             ticker = yf.Ticker(symbol)
             ticker.session.headers.update({
@@ -341,27 +343,50 @@ def stock_history():
             })
             
             # yfinance supports: 1d,5d,1mo,3mo,6mo,ytd,1y,2y,5y,10y,max
-            hist = ticker.history(period=period, timeout=10)
+            hist = ticker.history(period=period, timeout=15)
+            logging.info(f"Raw history shape for {symbol}: {hist.shape}")
             
-            if hist.empty:
-                logging.warning(f"Stock history API error: Empty history returned from yfinance for {symbol}")
+            if hist is None or hist.empty:
+                logging.warning(f"Stock history API: Empty history returned from yfinance for {symbol}")
                 if attempt < max_retries - 1:
                     time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
                     continue
                 return jsonify({'error': f'No data available for {symbol}. The symbol may be invalid or delisted.'}), 404
             
-            data = [
-                {'x': date.strftime('%Y-%m-%d'), 'y': float(row['Close'])}
-                for date, row in hist.iterrows()
-                if not (row['Close'] is None or row['Close'] != row['Close'])
-            ]
+            # Validate required columns exist
+            if 'Close' not in hist.columns:
+                logging.error(f"Stock history API: 'Close' column not found in data for {symbol}")
+                return jsonify({'error': f'Invalid data structure for {symbol}'}), 400
+            
+            # Filter valid data points
+            data = []
+            for date, row in hist.iterrows():
+                try:
+                    close_price = float(row['Close'])
+                    # Skip NaN, None, and inf values
+                    if pd.isna(close_price) or not np.isfinite(close_price):
+                        continue
+                    data.append({
+                        'x': date.strftime('%Y-%m-%d'),
+                        'y': close_price
+                    })
+                except (ValueError, TypeError) as e:
+                    logging.debug(f"Skipping invalid data point for {symbol} on {date}: {e}")
+                    continue
             
             if not data:
-                logging.warning(f"Stock history API error: No valid price data for {symbol}")
+                logging.warning(f"Stock history API: No valid price data for {symbol} after filtering")
                 return jsonify({'error': f'No valid price data for {symbol}'}), 404
             
-            logging.info(f"Successfully fetched {len(data)} data points for {symbol}")
+            logging.info(f"Successfully fetched {len(data)} valid data points for {symbol}")
             return jsonify({'symbol': symbol, 'history': data})
+            
+        except requests.exceptions.Timeout as e:
+            logging.error(f"Timeout fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            return jsonify({'error': f'Request timeout: Unable to fetch data for {symbol}. The server is taking too long. Please try again.'}), 504
             
         except requests.exceptions.RequestException as e:
             logging.error(f"Network error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {e}")
@@ -372,16 +397,16 @@ def stock_history():
             
         except ValueError as e:
             logging.error(f"Value error for {symbol}: {e}")
-            return jsonify({'error': f'Invalid data received for {symbol}'}), 400
+            return jsonify({'error': f'Invalid data received for {symbol}: {str(e)}'}), 400
             
         except Exception as e:
-            logging.error(f"Error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {str(e)}")
+            logging.error(f"Unexpected error fetching {symbol} (attempt {attempt + 1}/{max_retries}): {type(e).__name__} - {str(e)}", exc_info=True)
             if attempt < max_retries - 1:
                 time.sleep(retry_delay * (attempt + 1))
                 continue
             return jsonify({'error': f'Failed to fetch data for {symbol}: {str(e)}'}), 500
     
-    return jsonify({'error': f'Failed to fetch data for {symbol} after {max_retries} attempts'}), 500
+    return jsonify({'error': f'Failed to fetch data for {symbol} after {max_retries} attempts. Please try again later.'}), 500
 
 
 @app.route('/api/predict')
