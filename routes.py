@@ -281,6 +281,209 @@ def news():
 
     return render_template("news.html", articles=articles, region=region)
 
+
+# Company-specific news API (returns top 5 headlines for a given company/symbol)
+@app.route('/api/company-news')
+def company_news_api():
+    symbol = request.args.get('symbol', '')
+    company = request.args.get('company', '')
+
+    if not symbol and not company:
+        return jsonify({'error': 'No company or symbol provided'}), 400
+
+    if not (BRAVE_API_KEY or NEWS_API_KEY):
+        logging.error('Neither BRAVE_API_KEY nor NEWS_API_KEY is configured')
+        return jsonify({'error': 'News API keys not configured on server'}), 500
+
+    # Build a flexible query: try company full name (from yfinance if possible), short symbol (before dot), and the full symbol
+    short = ''
+    if symbol:
+        short = symbol.split('.')[0]
+
+    q_parts = []
+
+    # If user supplied a human-friendly company name, prefer that
+    if company and ' ' in company:
+        q_parts.append(f'"{company}"')
+
+    # If symbol looks like a ticker (eg TCS.NS), attempt to resolve long name via yfinance
+    long_name = None
+    try:
+        if symbol:
+            tk = yf.Ticker(symbol)
+            info = tk.info or {}
+            long_name = info.get('longName') or info.get('shortName')
+    except Exception as e:
+        logging.debug(f'Failed to fetch ticker info for {symbol}: {e}')
+
+    if long_name:
+        # only add if it's not the same as the short symbol
+        if short.lower() not in long_name.lower():
+            q_parts.append(f'"{long_name}"')
+
+    # Add short symbol and raw symbol as backup tokens
+    if short and short.lower() not in [p.lower() for p in q_parts]:
+        q_parts.append(short)
+    if symbol and symbol not in q_parts:
+        q_parts.append(symbol)
+
+    query = ' OR '.join(q_parts) if q_parts else symbol or company
+
+    # Try Brave Search API first for company-specific news
+    def normalize(s):
+        if not s:
+            return ''
+        return ''.join(ch.lower() if ch.isalnum() or ch.isspace() else ' ' for ch in s)
+
+    q_in_title = None
+    if long_name:
+        q_in_title = long_name
+    elif company and ' ' in company:
+        q_in_title = company
+    elif short:
+        q_in_title = short
+
+    # Attempt Brave Search if key is available
+    brave_articles = []
+    if BRAVE_API_KEY:
+        try:
+            brave_url = 'https://api.search.brave.com/v1/search'
+            headers = {
+                'Authorization': f'Bearer {BRAVE_API_KEY}',
+                'Accept': 'application/json'
+            }
+            # Use a simpler, company-focused query for Brave: prefer long company name or short ticker.
+            brave_query = q_in_title or long_name or company or short or symbol
+            params = {
+                'q': brave_query,
+                'size': 20,
+                'source': 'news'
+            }
+            logging.info(f'Attempting Brave Search with params: {params}')
+            r = requests.get(brave_url, headers=headers, params=params, timeout=8)
+            logging.info(f'Brave response status: {r.status_code}')
+            # If forbidden, try alternative header style (some APIs expect x-api-key)
+            if r.status_code == 403:
+                logging.warning('Brave returned 403; retrying with x-api-key header')
+                alt_headers = {'x-api-key': BRAVE_API_KEY, 'Accept': 'application/json'}
+                try:
+                    r2 = requests.get(brave_url, headers=alt_headers, params=params, timeout=8)
+                    logging.info(f'Brave retry (x-api-key) status: {r2.status_code}')
+                    r = r2
+                except Exception as e:
+                    logging.warning(f'Brave retry with x-api-key failed: {e}')
+            try:
+                brave_data = r.json()
+            except Exception as e:
+                # log headers and any text for debugging
+                hdrs = {k: v for k, v in r.headers.items()} if hasattr(r, 'headers') else {}
+                logging.warning(f'Brave response not JSON: {e} ; status={getattr(r, "status_code", None)} ; headers={hdrs} ; text={getattr(r, "text", "")[:1000]}')
+                brave_data = {}
+
+            logging.debug(f'Brave response keys: {list(brave_data.keys())}')
+
+            # Tolerant parsing: look for common keys
+            candidates = brave_data.get('articles') or brave_data.get('data') or brave_data.get('results') or brave_data.get('items') or brave_data.get('organic_results') or []
+            logging.info(f'Brave candidates count: {len(candidates)}')
+            for item in candidates:
+                # item could be dict with different shapes
+                title = item.get('title') or item.get('headline') or item.get('name')
+                link = item.get('url') or item.get('link') or item.get('sourceUrl')
+                source = (item.get('source') or {}).get('name') if isinstance(item.get('source'), dict) else item.get('source')
+                published = item.get('publishedAt') or item.get('published') or item.get('date')
+                desc = item.get('description') or item.get('snippet') or item.get('summary')
+                if title and link:
+                    brave_articles.append({
+                        'title': title,
+                        'url': link,
+                        'source': source,
+                        'publishedAt': published,
+                        'description': desc
+                    })
+        except Exception as e:
+            logging.warning(f'Brave Search failed for {query}: {e}')
+
+    # Filter Brave results strictly to ensure company mention
+    tokens = []
+    if long_name:
+        tokens.append(normalize(long_name))
+    if company:
+        tokens.append(normalize(company))
+    if short:
+        tokens.append(normalize(short))
+    tokens = [t for t in tokens if t]
+
+    def matches_tokens(article):
+        title = normalize(article.get('title') or '')
+        desc = normalize(article.get('description') or '')
+        text = title + ' ' + desc
+        for tok in tokens:
+            if tok in text:
+                return True
+            parts = tok.split()
+            if any(p in text for p in parts):
+                return True
+        return False
+
+    filtered_brave = [a for a in brave_articles if matches_tokens(a)]
+    if filtered_brave:
+        simplified = []
+        for a in filtered_brave[:5]:
+            simplified.append({
+                'title': a.get('title'),
+                'url': a.get('url'),
+                'source': a.get('source'),
+                'publishedAt': a.get('publishedAt'),
+                'description': a.get('description')
+            })
+        return jsonify({'articles': simplified})
+
+    # If Brave returned no matching articles or was unavailable/forbidden, try NewsAPI as a fallback
+    logging.warning('Brave did not return any matching company articles; attempting NewsAPI fallback')
+    if not NEWS_API_KEY:
+        logging.warning('NEWS_API_KEY not configured; returning empty list')
+        return jsonify({'articles': []})
+
+    # Build NewsAPI query (use company long name or short ticker)
+    news_query = long_name or company or short or symbol
+    news_url = "https://newsapi.org/v2/everything"
+    news_params = {
+        'q': news_query,
+        'language': 'en',
+        'sortBy': 'publishedAt',
+        'apiKey': NEWS_API_KEY,
+        'pageSize': 20
+    }
+    logging.info(f'Falling back to NewsAPI with query: {news_query}')
+    try:
+        resp = requests.get(news_url, params=news_params, timeout=8)
+        data = resp.json()
+    except Exception as e:
+        logging.error(f'NewsAPI fallback failed: {e}')
+        return jsonify({'articles': []})
+
+    articles = data.get('articles', [])[:20]
+    filtered = []
+    for a in articles:
+        title = normalize(a.get('title') or '')
+        desc = normalize(a.get('description') or '')
+        text = title + ' ' + desc
+        if any(tok in text or any(p in text for p in tok.split()) for tok in tokens):
+            filtered.append(a)
+
+    result_articles = filtered[:5]
+    simplified = []
+    for a in result_articles:
+        simplified.append({
+            'title': a.get('title'),
+            'url': a.get('url'),
+            'source': (a.get('source') or {}).get('name'),
+            'publishedAt': a.get('publishedAt'),
+            'description': a.get('description')
+        })
+
+    return jsonify({'articles': simplified})
+
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
@@ -434,3 +637,40 @@ def predict_api():
         return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# Admin debug endpoint: test Brave Search connectivity and header variants
+@app.route('/admin/test-brave')
+def admin_test_brave():
+    # Minimal auth: only allow when FLASK_DEBUG is True to avoid exposing in production
+    from config import BRAVE_API_KEY
+    results = []
+    if not BRAVE_API_KEY:
+        return jsonify({'error': 'BRAVE_API_KEY not configured'}), 400
+
+    brave_url = 'https://api.search.brave.com/v1/search'
+    test_q = 'Tata Consultancy Services'
+    params = {'q': test_q, 'source': 'news', 'size': 1}
+
+    attempts = [
+        {'name': 'Authorization Bearer', 'headers': {'Authorization': f'Bearer {BRAVE_API_KEY}', 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'}},
+        {'name': 'x-api-key', 'headers': {'x-api-key': BRAVE_API_KEY, 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'}},
+        {'name': 'X-Api-Key', 'headers': {'X-Api-Key': BRAVE_API_KEY, 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'}},
+        {'name': 'no-auth', 'headers': {'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'}}
+    ]
+
+    for att in attempts:
+        name = att['name']
+        hdrs = att['headers']
+        try:
+            r = requests.get(brave_url, headers=hdrs, params=params, timeout=8)
+            status = r.status_code
+            headers = {k: v for k, v in r.headers.items()}
+            text_preview = r.text[:800]
+            results.append({'attempt': name, 'status': status, 'headers': headers, 'body_preview': text_preview})
+        except Exception as e:
+            results.append({'attempt': name, 'error': str(e)})
+
+    # Also include env var value masked
+    masked = BRAVE_API_KEY[:4] + '...' + BRAVE_API_KEY[-4:]
+    return jsonify({'key_masked': masked, 'results': results})

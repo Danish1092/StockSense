@@ -31,7 +31,7 @@
             </div>
                 <div class="flex flex-row gap-8 mt-8 w-full justify-center">
                 <button id="predictBtn" @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
-                <button @click="tab = 'news'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">news</button>
+                <button id="newsBtn" @click="tab = 'news'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">news</button>
                 <button @click="tab = 'chatbot'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">chatbot</button>
             </div>
         </div>
@@ -63,7 +63,16 @@
                     <template x-if="tab === 'news'">
                         <div class="bg-black rounded-2xl p-8 shadow-2xl border border-green-700 w-full">
                             <h2 class="text-2xl font-bold mb-2 text-green-400">Market News</h2>
-                            <p class="text-green-200">Latest news for <strong>{{ company_name }}</strong> will appear here.</p>
+                            <p class="text-green-200 mb-4">Latest news for <strong>{{ company_name }}</strong> will appear here.</p>
+                            <div id="newsLoading" class="hidden w-full flex items-center justify-center mb-4">
+                                <svg class="animate-spin h-8 w-8 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </div>
+                            <ul id="newsList" class="space-y-4 list-none p-0 m-0">
+                                <!-- populated by JS -->
+                            </ul>
                         </div>
                     </template>
                     <template x-if="tab === 'chatbot'">
@@ -291,6 +300,42 @@
             predictBtn.addEventListener('click', function() {
                 // small delay to let Alpine open the panel
                 setTimeout(() => runPrediction(7), 220);
+            });
+        }
+
+        // Company news: fetch top 5 headlines for this company when news panel opens
+        const newsBtn = document.getElementById('newsBtn');
+
+        async function fetchCompanyNews() {
+            const [newsLoadingEl, newsListEl] = await waitForElements(['newsLoading', 'newsList'], 2000);
+            if (!newsListEl) return;
+            newsLoadingEl.classList.remove('hidden');
+            newsListEl.innerHTML = '';
+            try {
+                const resp = await fetch(`/api/company-news?symbol=${encodeURIComponent(symbol)}&company=${encodeURIComponent(symbol)}`);
+                const json = await resp.json();
+                newsLoadingEl.classList.add('hidden');
+                if (json.articles && json.articles.length) {
+                    json.articles.forEach(a => {
+                        const li = document.createElement('li');
+                        li.className = 'text-green-200';
+                        const published = a.publishedAt ? new Date(a.publishedAt).toLocaleString() : '';
+                        li.innerHTML = `<a href="${a.url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-100 hover:underline">${a.title}</a><div class="text-sm text-green-300">${a.source || ''} • ${published}</div>`;
+                        newsListEl.appendChild(li);
+                    });
+                } else {
+                    newsListEl.innerHTML = '<li class="text-green-200">No recent news found.</li>';
+                }
+            } catch (e) {
+                newsLoadingEl.classList.add('hidden');
+                newsListEl.innerHTML = `<li class="text-red-400">Error fetching news: ${e && e.message ? e.message : e}</li>`;
+            }
+        }
+
+        if (newsBtn) {
+            newsBtn.addEventListener('click', function () {
+                // allow Alpine to render the panel, then fetch
+                setTimeout(() => fetchCompanyNews(), 220);
             });
         }
     });
