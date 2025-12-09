@@ -19,7 +19,7 @@ from datetime import datetime
 import logging
 import time
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
-from config import NEWS_API_KEY
+from config import NEWS_API_KEY, BRAVE_API_KEY, OPEN_ROUTER_API
 
 @app.route('/about')
 def about():
@@ -39,8 +39,9 @@ def info():
     company = request.args.get('company')
     if not company:
         return redirect(url_for('predict'))
-    # In the future, fetch real data for the company here
-    return render_template('info.html', company_name=company)
+    # Clean company name by removing .NS suffix for display
+    clean_name = company.replace('.NS', '') if company.endswith('.NS') else company
+    return render_template('info.html', company_name=company, clean_company_name=clean_name)
 
 
 # Home page with market movers
@@ -483,6 +484,67 @@ def company_news_api():
         })
 
     return jsonify({'articles': simplified})
+
+
+# Chat endpoint: forwards chat requests to OpenRouter (openrouter.ai)
+@app.route('/api/chat', methods=['POST'])
+def chat_api():
+    payload = request.get_json() or {}
+    messages = payload.get('messages')
+    model = payload.get('model', 'deepseek/deepseek-chat-v3.1')
+    company = payload.get('company', '')
+    # optional metadata
+    referer = payload.get('referer')
+    title = payload.get('title')
+
+    if not messages:
+        return jsonify({'error': 'No messages provided'}), 400
+
+    if not OPEN_ROUTER_API:
+        logging.error('OPEN_ROUTER_API is not configured')
+        return jsonify({'error': 'OpenRouter API key not configured on server'}), 500
+
+    try:
+        headers = {
+            'Authorization': f'Bearer {OPEN_ROUTER_API}',
+            'Content-Type': 'application/json'
+        }
+        if referer:
+            headers['HTTP-Referer'] = referer
+        if title:
+            headers['X-Title'] = title
+
+        # Build system prompt with company context
+        system_prompt = f"You are a helpful AI assistant specialized in stock market and company analysis. Always respond in English only, regardless of the language of the question. "
+        if company:
+            system_prompt += f"The user is asking questions about {company}. Provide informative, accurate responses specific to this company."
+        else:
+            system_prompt += "Provide informative and accurate responses."
+
+        # Insert system prompt as first message if not already present
+        messages_with_system = [{'role': 'system', 'content': system_prompt}] + messages
+
+        body = {
+            'model': model,
+            'messages': messages_with_system
+        }
+
+        r = requests.post('https://openrouter.ai/api/v1/chat/completions', headers=headers, json=body, timeout=30)
+
+        try:
+            jr = r.json()
+        except Exception:
+            logging.error('OpenRouter returned non-JSON response', exc_info=True)
+            return jsonify({'error': 'OpenRouter returned non-JSON response', 'status_code': r.status_code, 'text': r.text}), 502
+
+        # Relay OpenRouter response JSON to client
+        return jsonify({'status_code': r.status_code, 'result': jr}), (r.status_code if r.status_code != 200 else 200)
+
+    except requests.exceptions.Timeout:
+        return jsonify({'error': 'OpenRouter request timed out'}), 504
+    except Exception as e:
+        logging.error(f'Chat API error: {e}', exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 # Error handlers
 @app.errorhandler(404)
