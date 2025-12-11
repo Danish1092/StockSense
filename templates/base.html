@@ -7,6 +7,121 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS removed -->
     {% block styles %}{% endblock %}
+    <style>
+        body {
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .cursor-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 60%);
+            border-radius: 100%;
+            pointer-events: none;
+            transform: translate(-50%, -50%); /* Center the cursor */
+            z-index: 9999;
+        }
+
+        .cursor-light {
+            display: none; /* Initially hidden on mobile */
+        }
+
+        @media (min-width: 768px) {
+            .cursor-light {
+                display: block; /* Show cursor animation on larger screens */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cursor-light {
+                display: block; /* Enable cursor animation for mobile */
+            }
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .bar {
+            height: 3px;
+            width: 25px;
+            background-color: #333;
+            margin: 3px 0;
+        }
+
+        .nav-menu {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .nav-menu.active {
+            display: flex; /* Show menu when active */
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .hamburger {
+                display: none; /* Hide hamburger on larger screens */
+            }
+
+            .nav-menu {
+                display: flex; /* Always visible on larger screens */
+                flex-direction: row;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cursorLight = document.createElement("div");
+            cursorLight.classList.add("cursor-light");
+            document.body.appendChild(cursorLight);
+
+            const updateCursorPosition = (x, y) => {
+                const cursorSize = 25; // Half of the cursor size (50px width/height)
+                cursorLight.style.transform = `translate(${x - cursorSize}px, ${y - cursorSize}px)`; // Adjust for cursor size
+            };
+
+            document.addEventListener("mousemove", (e) => {
+                updateCursorPosition(e.clientX, e.clientY);
+            });
+
+            // Handle touch events for mobile
+            document.addEventListener("touchmove", (e) => {
+                const touch = e.touches[0];
+                updateCursorPosition(touch.clientX, touch.clientY);
+            });
+
+            const hamburger = document.querySelector(".hamburger");
+            const navMenu = document.querySelector(".nav-menu");
+
+            if (hamburger && navMenu) {
+                hamburger.addEventListener("click", () => {
+                    navMenu.classList.toggle("active");
+                });
+
+                // Close the menu when clicking outside (only for mobile)
+                document.addEventListener("click", (e) => {
+                    if (!hamburger.contains(e.target) && !navMenu.contains(e.target) && window.innerWidth < 768) {
+                        navMenu.classList.remove("active");
+                    }
+                });
+            }
+        });
+    </script>
 </head>
 <body class="min-h-screen bg-black bg-gradient-to-br from-black via-gray-900 to-black">
     <!-- Navbar -->
@@ -17,7 +132,7 @@
                 <a href="/" class="text-2xl font-extrabold text-green-400 hover:text-green-300 transition-colors tracking-wide drop-shadow">StockSense</a>
 
                 <!-- Navigation Links -->
-                <div class="flex items-center space-x-6">
+                <div class="hidden md:flex items-center space-x-6 nav-menu">
                     <a href="{{ url_for('top_gainers') }}" class="text-green-300 hover:text-green-500 transition-colors flex items-center text-sm">
                         <svg class="w-4 h-4 mr-1 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -49,14 +164,23 @@
                         </svg>
                         About Us
                     </a>
+                </div>
 
-                    <!-- Auth Button -->
+                <!-- Auth Button -->
+                <div class="flex items-center space-x-4">
                     {% if 'username' in session %}
                         <span class="text-green-200 text-sm font-semibold">{{ session['username'] }}</span>
                         <a href="/logout" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm transition-colors">Logout</a>
                     {% else %}
                         <a href="{{ url_for('login') }}" class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 text-sm transition-colors">Sign In</a>
                     {% endif %}
+                </div>
+
+                <!-- Hamburger Menu -->
+                <div class="hamburger md:hidden">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
                 </div>
             </div>
         </div>
@@ -133,4 +257,3 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
- 

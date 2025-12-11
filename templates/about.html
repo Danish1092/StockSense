@@ -1,147 +1,262 @@
 {% extends 'base.html' %}
 
 {% block styles %}
-<style>
-    body {
-        background: #000000;
-        color: #00ff88;
-        font-family: 'Inter', sans-serif;
-        overflow-x: hidden;
-    }
+    <style>
+        /* Base styles for glass effects */
+        .glass-effect {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 179, 237, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(99, 179, 237, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.95), rgba(17, 24, 39, 0.95));
+        }
+        body {
+            background: linear-gradient(45deg, #000000, #1a365d);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            h2 {
+                font-size: 1.75rem !important;
+            }
+            h3 {
+                font-size: 1.25rem !important;
+            }
+            p {
+                font-size: 1rem !important;
+            }
+        }
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 1.5rem !important;
+                margin: 0.5rem 0 !important;
+            }
+            a, button {
+                padding: 0.75rem !important;
+            }
+        }
+        @media (hover: hover) {
+            .glass-card:hover {
+                transform: translateY(-5px);
+            }
+        }
+        @media (hover: none) {
+            .glass-card:active {
+                transform: translateY(-2px);
+            }
+        }
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
 
-    /* Neon Glow Theme */
-    .neon-card {
-        background: rgba(0, 0, 0, 0.55);
-        border: 1px solid rgba(0, 255, 136, 0.25);
-        box-shadow: 0 0 25px rgba(0, 255, 136, 0.35);
-        backdrop-filter: blur(12px);
-        border-radius: 1rem;
-        padding: 2rem;
-        transition: 0.3s ease-in-out;
-    }
-    .neon-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 0 40px rgba(0, 255, 136, 0.55);
-    }
+        body {
+            position: relative;
+            overflow-x: hidden;
+        }
 
-    .hero-title {
-        text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
-        letter-spacing: 3px;
-    }
-
-    .neon-btn {
-        background: rgba(0, 255, 136, 0.15);
-        border: 1px solid #00ff88;
-        box-shadow: 0 0 10px #00ff88;
-        padding: 1rem 2rem;
-        color: #00ff88;
-        font-weight: bold;
-        border-radius: 10px;
-        transition: .3s ease;
-    }
-    .neon-btn:hover {
-        background: #00ff88;
-        color: #000000;
-        box-shadow: 0 0 25px #00ff88;
-        transform: scale(1.05);
-    }
-
-    .icon-box {
-        background: rgba(0, 255, 136, 0.1);
-        border: 1px solid rgba(0, 255, 136, 0.3);
-        box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
-        padding: 1rem;
-        border-radius: 12px;
-        backdrop-filter: blur(8px);
-    }
-</style>
+        .cursor-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 60%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="py-16 text-center">
-    <h1 class="text-5xl font-bold text-[#00ff88] hero-title">StockSense</h1>
-    <p class="mt-4 text-lg text-green-300">AI Powered Stock Market Intelligence</p>
-</div>
+    <!-- Hero Section -->
+    <div class="glass-effect border-b border-blue-900/20 text-blue-100 py-12 sm:py-20">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold text-blue-200 leading-tight tracking-wide">StockSense</h1>
+        </div>
+    </div>
 
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <div class="neon-card">
-        <h2 class="text-3xl font-bold mb-6">About StockSense</h2>
-        <div class="space-y-8 text-green-300">
-            <div class="flex gap-6 items-start">
-                <div class="icon-box">
-                    <svg class="w-7 h-7 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zM9 19V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14"></path></svg>
+    <!-- Project Overview Section -->
+    <div class="max-w-6xl mx-auto px-4 py-8 sm:py-16">
+        <div class="glass-card rounded-xl p-6 sm:p-8 hover:shadow-blue-900/20">
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-300 mb-6 tracking-wide">About StockSense</h2>
+            <div class="space-y-8 text-blue-200">
+                <div class="flex items-start space-x-6 hover:translate-x-2 transition-transform duration-300">
+                    <div class="bg-blue-800/40 p-4 rounded-lg glass-effect">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Historical Data Analysis</h3>
+                        <p>We analyze years of historical stock data, including price movements, trading volumes, and market trends to identify patterns and correlations.</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-[#00ff88]">Historical Data Analysis</h3>
-                    <p>Analyzing years of market data to detect trends, patterns, and insights.</p>
+
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-800 p-3 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2 text-blue-300">Machine Learning Models</h3>
+                        <p>Our advanced ML algorithms process multiple data points including market sentiment, company financials, and global economic indicators to generate accurate predictions.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="bg-blue-800 p-3 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Real-time Analysis</h3>
+                        <p>Our system continuously monitors market conditions and updates predictions in real-time, helping investors make informed decisions quickly.</p>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="flex gap-6 items-start">
-                <div class="icon-box">
-                    <svg class="w-7 h-7 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <!-- Updated Vision & Mission Section Side by Side with Device Compatibility -->
+    <div class="max-w-6xl mx-auto px-4 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Vision -->
+            <div class="glass-card rounded-xl p-6 transform transition duration-500 hover:scale-105 bg-gradient-to-r from-purple-800 via-purple-600 to-purple-500 shadow-lg shadow-purple-900/50">
+                <div class="flex items-center mb-4">
+                    <div class="bg-purple-700/40 p-3 rounded-lg mr-3 glass-effect">
+                        <svg class="w-6 h-6 text-purple-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-purple-100">🌟 Vision</h2>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-[#00ff88]">Machine Learning Models</h3>
-                    <p>Advanced models trained on sentiment, financial data, and global indicators.</p>
-                </div>
+                <p class="text-purple-100 text-sm leading-relaxed">
+                    Empower individuals with data-driven predictions and real-time financial intelligence to make confident investment decisions.
+                </p>
             </div>
 
-            <div class="flex gap-6 items-start">
-                <div class="icon-box">
-                    <svg class="w-7 h-7 text-[#00ff88]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m2 10H7V5h5.586L18 10.414V19z"></path></svg>
+            <!-- Mission -->
+            <div class="glass-card rounded-xl p-6 transform transition duration-500 hover:scale-105 bg-gradient-to-r from-green-800 via-green-600 to-green-500 shadow-lg shadow-green-900/50">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-700/40 p-3 rounded-lg mr-3 glass-effect">
+                        <svg class="w-6 h-6 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-green-100">🎯 Mission</h2>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-[#00ff88]">Real-time Analysis</h3>
-                    <p>Market conditions tracked live for instant prediction updates.</p>
+                <ul class="list-disc pl-5 text-green-100 text-sm leading-relaxed space-y-2">
+                    <li>Deliver accurate stock predictions using advanced machine learning models.</li>
+                    <li>Provide real-time insights on top gainers and losers.</li>
+                    <li>Offer reliable financial news from trusted sources.</li>
+                    <li>Ensure a fast, always-available platform for users.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contributors Section with Expandable Read More -->
+    <div class="max-w-6xl mx-auto px-4 py-16">
+        <div class="glass-card rounded-xl p-8 transform hover:shadow-blue-900/20">
+            <h2 class="text-3xl font-bold text-blue-300 mb-12 text-center tracking-wide">Contributors</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <!-- Contributor 1 -->
+                <div class="glass-effect rounded-xl p-4 sm:p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <img src="/static/images/narasareddy.jpg" alt="Narasareddy" class="w-24 h-24 mx-auto rounded-full mb-4">
+                    <h3 class="text-xl font-semibold text-blue-300 mb-3">Narasareddy</h3>
+                    <p class="text-blue-200 opacity-90 mt-3">Quant Research & ML Lead</p>
+                    <p class="text-blue-200" id="narasareddy-short">Builds stock prediction models... <a href="#" class="text-blue-300 underline" onclick="toggleContent('narasareddy')">Read more</a></p>
+                    <p class="text-blue-200 hidden" id="narasareddy-full">Builds stock prediction models, designs technical indicators, and analyzes market patterns using data science. <a href="#" class="text-blue-300 underline" onclick="toggleContent('narasareddy')">Show less</a></p>
+                </div>
+
+                <!-- Contributor 2 -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <img src="/static/images/syed-danish.jpg" alt="Syed Danish" class="w-24 h-24 mx-auto rounded-full mb-4">
+                    <h3 class="text-xl font-semibold mb-3">Syed Danish</h3>
+                    <p class="text-blue-200 opacity-90 mt-3">Data Integration & API Engineer</p>
+                    <p class="text-blue-200" id="syed-danish-short">Handles real-time stock API connections... <a href="#" class="text-blue-300 underline" onclick="toggleContent('syed-danish')">Read more</a></p>
+                    <p class="text-blue-200 hidden" id="syed-danish-full">Handles real-time stock API connections, data pipelines, and backend logic for smooth and accurate market data flow. <a href="#" class="text-blue-300 underline" onclick="toggleContent('syed-danish')">Show less</a></p>
+                </div>
+
+                <!-- Contributor 3 -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <img src="/static/images/owais-ahmed.jpg" alt="Owais Ahmed" class="w-24 h-24 mx-auto rounded-full mb-4">
+                    <h3 class="text-xl font-semibold mb-3">Owais Ahmed</h3>
+                    <p class="text-blue-200 opacity-90 mt-3">Frontend & Dashboard Engineer</p>
+                    <p class="text-blue-200" id="owais-ahmed-short">Creates clean dashboards, charts... <a href="#" class="text-blue-300 underline" onclick="toggleContent('owais-ahmed')">Read more</a></p>
+                    <p class="text-blue-200 hidden" id="owais-ahmed-full">Creates clean dashboards, charts, and user interfaces for viewing live prices, predictions, and insights. <a href="#" class="text-blue-300 underline" onclick="toggleContent('owais-ahmed')">Show less</a></p>
+                </div>
+
+                <!-- Contributor 4 -->
+                <div class="glass-effect rounded-xl p-6 transform transition duration-500 hover:scale-105 text-center">
+                    <img src="/static/images/priyanka.jpg" alt="Priyanka" class="w-24 h-24 mx-auto rounded-full mb-4">
+                    <h3 class="text-xl font-semibold mb-3">Priyanka</h3>
+                    <p class="text-blue-200 opacity-90 mt-3">Cloud & Reliability Engineer</p>
+                    <p class="text-blue-200" id="priyanka-short">Manages hosting, deployment, uptime... <a href="#" class="text-blue-300 underline" onclick="toggleContent('priyanka')">Read more</a></p>
+                    <p class="text-blue-200 hidden" id="priyanka-full">Manages hosting, deployment, uptime, server performance, and ensures the system runs fast and stable during market hours. <a href="#" class="text-blue-300 underline" onclick="toggleContent('priyanka')">Show less</a></p>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Vision & Mission Section -->
-<div class="max-w-6xl mx-auto px-4 py-12 grid md:grid-cols-2 gap-10">
-    <div class="neon-card">
-        <h2 class="text-3xl font-bold text-[#00ff88] mb-4">Vision</h2>
-        <p class="text-green-300 text-lg">Empowering everyone with AI-driven stock prediction precision. We aim to create a world where investors at any skill level gain access to deep, reliable, and understandable market insights. Our vision is to build a trusted global platform that merges cutting-edge AI with intuitive design, enabling smarter, more confident financial decisions.</p>
-    </div>
+    <script>
+        function toggleContent(id) {
+            const shortContent = document.getElementById(`${id}-short`);
+            const fullContent = document.getElementById(`${id}-full`);
 
-    <div class="neon-card">
-        <h2 class="text-3xl font-bold text-[#00ff88] mb-4">Mission</h2>
-        <p class="text-green-300 text-lg">Delivering accurate, fast, and accessible financial intelligence globally. Our mission is to simplify complex stock data into clear, real-time insights while enhancing user confidence through transparency and precision. We continue to push the boundaries of AI innovation, ensuring that every investor—whether beginner or expert—can make informed decisions backed by powerful analytics.</p>
-    </div>
-</div>
+            if (shortContent.classList.contains('hidden')) {
+                shortContent.classList.remove('hidden');
+                fullContent.classList.add('hidden');
+            } else {
+                shortContent.classList.add('hidden');
+                fullContent.classList.remove('hidden');
+            }
+        }
 
-<!-- Contributors Section -->
-<div class="max-w-6xl mx-auto px-4 py-12">
-    <h2 class="text-3xl font-bold text-center text-[#00ff88] mb-10">Contributors</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="neon-card text-center">
-            <h3 class="text-xl font-semibold text-[#00ff88]">Narasareddy</h3>
-            <p class="text-green-300">ML Model</p>
-        </div>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cursorLight = document.createElement("div");
+            cursorLight.classList.add("cursor-light");
+            document.body.appendChild(cursorLight);
 
-        <div class="neon-card text-center">
-            <h3 class="text-xl font-semibold text-[#00ff88]">Syed Danish</h3>
-            <p class="text-green-300">Backend</p>
-        </div>
+            document.addEventListener("mousemove", (e) => {
+                cursorLight.style.top = `${e.clientY}px`;
+                cursorLight.style.left = `${e.clientX}px`;
+            });
+        });
+    </script>
 
-        <div class="neon-card text-center">
-            <h3 class="text-xl font-semibold text-[#00ff88]">Owais Ahmed</h3>
-            <p class="text-green-300">Frontend</p>
-        </div>
-
-        <div class="neon-card text-center">
-            <h3 class="text-xl font-semibold text-[#00ff88]">Priyanka</h3>
-            <p class="text-green-300">Frontend</p>
+    <!-- Contact Section -->
+    <div class="glass-effect py-8 sm:py-16 mt-8 sm:mt-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h2 class="text-2xl sm:text-3xl font-bold text-blue-200 mb-4 sm:mb-8">Get Started with StockSense</h2>
+            <p class="text-blue-200 mb-6 sm:mb-8 text-base sm:text-lg">Ready to transform your investment strategy with AI-powered insights?</p>
+            <a href="/predict" class="inline-block glass-effect text-blue-100 px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-blue-600/30 active:bg-blue-600/40 transition-all duration-300 transform hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-blue-500/20 touch-manipulation">
+                Try StockSense Now
+            </a>
         </div>
     </div>
-</div>
-
-<!-- CTA -->
-<div class="text-center py-16">
-    <a class="neon-btn" href="#">Try StockSense Now</a>
-</div>
-
 {% endblock %}
