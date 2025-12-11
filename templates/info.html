@@ -76,7 +76,7 @@
                         </div>
                     </template>
                     <template x-if="tab === 'chatbot'">
-                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 w-full flex flex-col h-full overflow-hidden">
+                        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 w-full flex flex-col h-[70vh] md:h-[70vh] overflow-hidden min-h-0">
                             <!-- ChatGPT-style Header -->
                             <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-200 dark:border-slate-700 px-6 py-4">
                                 <div class="flex items-center justify-between">
@@ -88,14 +88,14 @@
                                         </div>
                                         <div>
                                             <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ clean_company_name }} Analyst</h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">Powered by DeepSeek</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Powered by OpenAI</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Chat Messages Area (ChatGPT-like) -->
-                            <div id="chatWindow" class="flex-1 overflow-y-auto bg-white dark:bg-slate-900 px-6 py-4 space-y-4">
+                            <div id="chatWindow" class="flex-1 overflow-y-auto bg-white dark:bg-slate-900 px-6 py-4 space-y-4 min-h-0">
                                 <!-- Welcome message -->
                                 <div class="flex justify-center mb-6">
                                     <div class="text-center text-gray-500 dark:text-gray-400 text-sm">
@@ -147,9 +147,34 @@
                             }
                         </style>
                     </template>
-                            #chatWindow::-webkit-scrollbar-thumb:hover {
-                                background: rgba(34, 211, 163, 0.5);
+                        <style>
+                            /* Custom scrollbar for chat window - WebKit browsers */
+                            #chatWindow::-webkit-scrollbar { width: 10px; }
+                            #chatWindow::-webkit-scrollbar-track {
+                                background: transparent;
+                                border-radius: 8px;
                             }
+                            #chatWindow::-webkit-scrollbar-thumb {
+                                border-radius: 8px;
+                                background: linear-gradient(180deg, rgba(34,211,163,0.22), rgba(16,185,129,0.6));
+                                box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+                                border: 2px solid rgba(17,24,39,0.0);
+                            }
+                            #chatWindow::-webkit-scrollbar-thumb:hover {
+                                background: linear-gradient(180deg, rgba(34,211,163,0.32), rgba(16,185,129,0.8));
+                            }
+
+                            /* Dark-mode tweaks when .dark is applied to body */
+                            .dark #chatWindow::-webkit-scrollbar-thumb {
+                                background: linear-gradient(180deg, rgba(6,95,70,0.18), rgba(16,185,129,0.4));
+                                box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+                            }
+                            .dark #chatWindow::-webkit-scrollbar-thumb:hover {
+                                background: linear-gradient(180deg, rgba(6,95,70,0.28), rgba(16,185,129,0.6));
+                            }
+
+                            /* Firefox scrollbar styling */
+                            #chatWindow { scrollbar-width: thin; scrollbar-color: rgba(34,211,163,0.6) transparent; }
                         </style>
                     </template>
                 </div>
@@ -457,9 +482,11 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'deepseek/deepseek-chat-v3.1',
+                        model: 'gpt-5-mini',
                         messages: [ { role: 'user', content: text } ],
                         company: cleanCompanyName,
+                        symbol: symbol,
+                        period: currentPeriod,
                         referer: window.location.href,
                         title: document.title
                     })
@@ -468,29 +495,33 @@
                 const json = await resp.json();
                 chatStatus.textContent = '';
                 if (!resp.ok) {
-                    const msg = (json && (json.error || (json.result && json.result.error))) || `Server error (${resp.status})`;
+                    let msg = (json && (json.error || (json.result && json.result.error))) || `Server error (${resp.status})`;
+                    if (typeof msg === 'object') {
+                        try { msg = JSON.stringify(msg, null, 2); } catch (e) { msg = String(msg); }
+                    }
                     appendMessage('assistant', 'Error: ' + msg);
                     return;
                 }
 
-                // Try to extract assistant text from OpenRouter response shapes
+                // Prefer server-provided assistant_text (pre-extracted); otherwise try common shapes
                 let assistantText = '';
-                if (json && json.result) {
+                if (json && json.result && json.assistant_text) {
+                    assistantText = json.assistant_text;
+                } else if (json && json.result) {
                     const r = json.result;
-                    // OpenRouter returns a 'choices' array similar to OpenAI
                     if (r.choices && r.choices.length) {
                         const ch = r.choices[0];
-                        if (ch.message && ch.message.content) assistantText = ch.message.content;
-                        else if (ch.text) assistantText = ch.text;
+                        if (ch.message && typeof ch.message.content === 'string') assistantText = ch.message.content;
+                        else if (ch.text && typeof ch.text === 'string') assistantText = ch.text;
+                        else if (ch.delta && typeof ch.delta.content === 'string') assistantText = ch.delta.content;
+                        else if (ch.message && typeof ch.message === 'string') assistantText = ch.message;
                     } else if (r.output && r.output.length) {
                         assistantText = r.output.map(o => o.content || o.text || '').join('\n');
-                    } else if (r.choices && r.choices[0] && r.choices[0].message) {
-                        assistantText = r.choices[0].message.content || '';
                     }
                 }
 
                 if (!assistantText) {
-                    // fallback: pretty-print whole response
+                    // fallback: pretty-print whole response (will be shown when nothing else found)
                     assistantText = JSON.stringify(json.result || json, null, 2);
                 }
 

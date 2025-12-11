@@ -49,7 +49,8 @@ from datetime import datetime
 import logging
 import time
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
-from config import NEWS_API_KEY, BRAVE_API_KEY, OPEN_ROUTER_API
+from config import NEWS_API_KEY, BRAVE_API_KEY, OPENAI_API_KEY
+import peewee
 
 @app.route('/about')
 def about():
@@ -515,65 +516,140 @@ def company_news_api():
     return jsonify({'articles': simplified})
 
 
-# Chat endpoint: forwards chat requests to OpenRouter (openrouter.ai)
+# Chat endpoint: use OpenAI official API
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
     payload = request.get_json() or {}
+    logging.info(f"Incoming chat payload: {payload}")
     messages = payload.get('messages')
-    model = payload.get('model', 'deepseek/deepseek-chat-v3.1')
+    # tolerate a single-string message payload (compatibility with clients)
+    if messages is None:
+        single = payload.get('message') or payload.get('text') or payload.get('content')
+        if single:
+            messages = [{'role': 'user', 'content': single}]
+    model = payload.get('model', 'gpt-5-mini')
     company = payload.get('company', '')
     # optional metadata
     referer = payload.get('referer')
     title = payload.get('title')
+    period = payload.get('period', '1mo')
+    symbol_for_history = payload.get('symbol') or company
 
     if not messages:
-        return jsonify({'error': 'No messages provided'}), 400
+        return jsonify({'error': 'No messages provided', 'received': payload}), 400
 
-    if not OPEN_ROUTER_API:
-        logging.error('OPEN_ROUTER_API is not configured')
-        return jsonify({'error': 'OpenRouter API key not configured on server'}), 500
+    # Build base system prompt
+    base_system = "You are a helpful AI assistant specialized in stock market and company analysis. Always respond in English only."
+    if company:
+        base_system += f" The user is asking questions about {company}. Provide informative, accurate and concise responses specific to this company."
 
-    try:
-        headers = {
-            'Authorization': f'Bearer {OPEN_ROUTER_API}',
-            'Content-Type': 'application/json'
-        }
-        if referer:
-            headers['HTTP-Referer'] = referer
-        if title:
-            headers['X-Title'] = title
-
-        # Build system prompt with company context
-        system_prompt = f"You are a helpful AI assistant specialized in stock market and company analysis. Always respond in English only, regardless of the language of the question. "
-        if company:
-            system_prompt += f"The user is asking questions about {company}. Provide informative, accurate responses specific to this company."
-        else:
-            system_prompt += "Provide informative and accurate responses."
-
-        # Insert system prompt as first message if not already present
-        messages_with_system = [{'role': 'system', 'content': system_prompt}] + messages
-
-        body = {
-            'model': model,
-            'messages': messages_with_system
-        }
-
-        r = requests.post('https://openrouter.ai/api/v1/chat/completions', headers=headers, json=body, timeout=30)
-
+    # If OpenAI key is configured, fetch recent history and call OpenAI's Chat API
+    if OPENAI_API_KEY:
         try:
-            jr = r.json()
-        except Exception:
-            logging.error('OpenRouter returned non-JSON response', exc_info=True)
-            return jsonify({'error': 'OpenRouter returned non-JSON response', 'status_code': r.status_code, 'text': r.text}), 502
+            # Fetch recent historical prices for context (best-effort)
+            history_summary = ''
+            recent_points = []
+            try:
+                if symbol_for_history:
+                    tk = yf.Ticker(symbol_for_history)
+                    hist = tk.history(period=period, timeout=15)
+                    if hist is not None and not hist.empty and 'Close' in hist.columns:
+                        # gather up to last 14 closes
+                        for date, row in hist.tail(14).iterrows():
+                            try:
+                                close_price = float(row['Close'])
+                                recent_points.append({'x': date.strftime('%Y-%m-%d'), 'y': close_price})
+                            except Exception:
+                                continue
+                        if recent_points:
+                            first = recent_points[0]['y']
+                            last = recent_points[-1]['y']
+                            pct = ((last - first) / first * 100) if first and first != 0 else 0.0
+                            history_summary = f"Recent close prices ({len(recent_points)} points, period={period}): last_close={last:.2f}, change={pct:.2f}% over sample."
+            except Exception as e:
+                logging.debug(f'Could not fetch history for chat context: {e}')
 
-        # Relay OpenRouter response JSON to client
-        return jsonify({'status_code': r.status_code, 'result': jr}), (r.status_code if r.status_code != 200 else 200)
+            system_prompt = base_system
+            if history_summary:
+                system_prompt += "\nContext: " + history_summary
+                # include a compact JSON-like snippet for precise values
+                snippet = ', '.join([f"{p['x']}:{p['y']:.2f}" for p in recent_points])
+                system_prompt += f"\nRecent closes: [{snippet}]"
 
-    except requests.exceptions.Timeout:
-        return jsonify({'error': 'OpenRouter request timed out'}), 504
-    except Exception as e:
-        logging.error(f'Chat API error: {e}', exc_info=True)
-        return jsonify({'error': str(e)}), 500
+            messages_with_system = [{'role': 'system', 'content': system_prompt}] + messages
+
+            headers = {
+                'Authorization': f'Bearer {OPENAI_API_KEY}',
+                'Content-Type': 'application/json'
+            }
+            if referer:
+                headers['HTTP-Referer'] = referer
+            if title:
+                headers['X-Title'] = title
+
+            body = {
+                'model': model,
+                'messages': messages_with_system,
+                'max_completion_tokens': 800
+            }
+
+            # Log the outbound request body for debugging
+            logging.info(f"OpenAI request body: model={model}, messages_count={len(messages_with_system)}")
+            r = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=body, timeout=30)
+            try:
+                jr = r.json()
+            except Exception:
+                logging.error('OpenAI returned non-JSON response', exc_info=True)
+                return jsonify({'error': 'OpenAI returned non-JSON response', 'status_code': r.status_code, 'text': r.text}), 502
+
+            # Try to extract a readable assistant text from the provider response
+            def _find_first_string(obj):
+                # Recursively find the first non-empty string leaf in nested dicts/lists
+                if obj is None:
+                    return None
+                if isinstance(obj, str):
+                    s = obj.strip()
+                    return s if len(s) > 0 else None
+                if isinstance(obj, dict):
+                    # Preferred path: choices[0].message.content
+                    if 'choices' in obj and isinstance(obj['choices'], list) and len(obj['choices']) > 0:
+                        ch = obj['choices'][0]
+                        # message.content is typical
+                        msg = ch.get('message') or ch.get('text') or ch.get('delta')
+                        candidate = _find_first_string(msg)
+                        if candidate:
+                            return candidate
+                    for v in obj.values():
+                        res = _find_first_string(v)
+                        if res:
+                            return res
+                if isinstance(obj, list):
+                    for item in obj:
+                        res = _find_first_string(item)
+                        if res:
+                            return res
+                return None
+
+            assistant_text = _find_first_string(jr)
+
+            payload_out = {'status_code': r.status_code, 'result': jr, 'assistant_text': assistant_text}
+
+            # Always return 200 to the frontend and include provider status + body so the client can display readable errors
+            if r.status_code != 200:
+                logging.error(f"OpenAI API returned status {r.status_code}: {jr}")
+                return jsonify(payload_out), 200
+
+            return jsonify(payload_out), 200
+
+        except requests.exceptions.Timeout:
+            return jsonify({'error': 'OpenAI request timed out'}), 504
+        except Exception as e:
+            logging.error(f'OpenAI Chat API error: {e}', exc_info=True)
+            return jsonify({'error': 'OpenAI Chat API error'}), 500
+
+    # If OpenAI is not configured, return an explicit error
+    logging.error('OpenAI API key is not configured on the server')
+    return jsonify({'error': 'OpenAI API key not configured on server'}), 500
 
 # Error handlers
 @app.errorhandler(404)
@@ -693,6 +769,11 @@ def stock_history():
                 continue
             return jsonify({'error': f'Network error: Unable to fetch data for {symbol}. Please check your internet connection.'}), 503
             
+        except peewee.OperationalError as e:
+            # Common cause: yfinance/peewee sqlite cache file is corrupted or inaccessible (disk I/O error)
+            logging.error(f"Peewee/SQLite OperationalError fetching {symbol}: {e}", exc_info=True)
+            return jsonify({'error': 'Internal data cache error: disk I/O or permission issue when accessing yfinance cache. Try deleting the yfinance cache file (see README) or check disk/AV permissions.'}), 500
+
         except ValueError as e:
             logging.error(f"Value error for {symbol}: {e}")
             return jsonify({'error': f'Invalid data received for {symbol}: {str(e)}'}), 400

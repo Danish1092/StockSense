@@ -8,9 +8,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# OpenRouter key (accept either uppercase or existing lowercase variable name)
-OPEN_ROUTER_API = os.getenv("OPEN_ROUTER_API") or os.getenv("open_router_api")
 
 # Secret key for signing session cookies
 SECRET_KEY = 'your-secret-key-here'  # Replace with a strong, random key
