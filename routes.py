@@ -1,10 +1,40 @@
 from flask import jsonify
 import yfinance as yf
 
-# ...existing code...
+# Company list and logo mapping for predict page
 
+# Company display names
+companies = [
+    'TCS.ns', 'RELIANCE.ns', 'INFY.ns', 'HDFCBANK.ns', 'ICICIBANK.ns',
+        'SBIN.ns', 'ITC.ns', 'LT.ns', 'AXISBANK.ns', 'BHARTIARTL.ns'
+]
 
+# Map display names to Yahoo Finance ticker symbols
+company_tickers = {
+    "TCS": "tcs",
+    "Reliance": "reliance",
+    "Infosys": "infosys",
+    "HDFC": "hdfc",
+    "ICICI Bank": "icici",
+    "SBI Bank": "sbi",
+    "ITC": "itc",
+    "L and T": "landt",
+    "Axis Bank": "axis",
+    "Bharti Airtel": "bharti"
+}
 
+company_logos = {
+    "TCS.ns": "images/logos/tcs.png",
+    "RELIANCE.ns": "images/logos/reliance.png",
+    "INFY.ns": "images/logos/infosys.png",
+    "HDFCBANK.ns": "images/logos/hdfc.png",
+    "ICICIBANK.ns": "images/logos/icici.png",
+    "SBIN.ns": "images/logos/sbi.png",
+    "ITC.ns": "images/logos/itc.png",
+    "LT.ns": "images/logos/landt.png",
+    "AXISBANK.ns": "images/logos/axis.png",
+    "BHARTIARTL.ns": "images/logos/bharti.png"
+}
 
 from flask import render_template, jsonify, request, redirect, url_for, session, flash
 import yfinance as yf
@@ -27,21 +57,17 @@ def about():
 # Predict and Info routes
 @app.route('/predict')
 def predict():
-    # Placeholder: update this list with your 10 company names later
-    companies = [
-        'TCS.NS', 'RELIANCE.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
-        'SBIN.NS', 'ITC.NS', 'LT.NS', 'AXISBANK.NS', 'BHARTIARTL.NS'
-    ]
-    return render_template('predict.html', companies=companies)
+    return render_template('predict.html', companies=companies, company_logos=company_logos)
 
 @app.route('/info')
 def info():
     company = request.args.get('company')
     if not company:
         return redirect(url_for('predict'))
-    # Clean company name by removing .NS suffix for display
-    clean_name = company.replace('.NS', '') if company.endswith('.NS') else company
-    return render_template('info.html', company_name=company, clean_company_name=clean_name)
+    # Map display name to Yahoo Finance symbol
+    symbol = company_tickers.get(company, company)
+    clean_name = company
+    return render_template('info.html', company_name=company, clean_company_name=clean_name, symbol=symbol)
 
 
 # Home page with market movers
@@ -286,8 +312,11 @@ def news():
 # Company-specific news API (returns top 5 headlines for a given company/symbol)
 @app.route('/api/company-news')
 def company_news_api():
-    symbol = request.args.get('symbol', '')
     company = request.args.get('company', '')
+    symbol = request.args.get('symbol', '')
+    # If only company name is provided, map to ticker
+    if not symbol and company:
+        symbol = company_tickers.get(company, '')
 
     if not symbol and not company:
         return jsonify({'error': 'No company or symbol provided'}), 400
@@ -585,7 +614,11 @@ def fetch_nse_data():
 # API endpoint for historical stock data (all time)
 @app.route('/api/stock-history')
 def stock_history():
+    company = request.args.get('company')
     symbol = request.args.get('symbol')
+    # If only company name is provided, map to ticker
+    if not symbol and company:
+        symbol = company_tickers.get(company, '')
     period = request.args.get('period', 'max')
     if not symbol:
         return jsonify({'error': 'No symbol provided'}), 400
