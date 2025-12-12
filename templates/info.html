@@ -70,7 +70,7 @@
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                                 </svg>
                             </div>
-                            <ul id="newsList" class="space-y-4 list-none p-0 m-0">
+                            <ul id="newsList" class="list-disc pl-6 space-y-3 text-green-300">
                                 <!-- populated by JS -->
                             </ul>
                         </div>
@@ -416,13 +416,20 @@
                 if (json.articles && json.articles.length) {
                     json.articles.forEach(a => {
                         const li = document.createElement('li');
-                        li.className = 'text-green-200';
-                        const published = a.publishedAt ? new Date(a.publishedAt).toLocaleString() : '';
-                        li.innerHTML = `<a href="${a.url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-green-100 hover:underline">${a.title}</a><div class="text-sm text-green-300">${a.source || ''} • ${published}</div>`;
+                        li.className = 'text-green-300 hover:text-green-100 transition-colors';
+                        const fullTitle = a.title || 'Untitled';
+                        const maxLen = 110;
+                        const titleText = fullTitle.length > maxLen ? fullTitle.slice(0, maxLen).trim() + '…' : fullTitle;
+                        li.innerHTML = `
+                            <a href="${a.url}" title="${fullTitle.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-start gap-2">
+                                <span class="flex-1">${titleText}</span>
+                                <span class="text-green-400 opacity-80">→</span>
+                            </a>
+                        `;
                         newsListEl.appendChild(li);
                     });
                 } else {
-                    newsListEl.innerHTML = '<li class="text-green-200">No recent news found.</li>';
+                    newsListEl.innerHTML = '<li class="text-green-200 text-center py-4">No recent news found.</li>';
                 }
             } catch (e) {
                 newsLoadingEl.classList.add('hidden');

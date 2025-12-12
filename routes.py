@@ -62,32 +62,53 @@ def brave_search(query, size=4, timeout=8):
     if not BRAVE_API_KEY:
         return results
 
+    # Try multiple Brave endpoints and header patterns to maximize chance of success.
     attempts = 2
     backoff = 0.8
     data = {}
+    endpoints = [
+        'https://api.search.brave.com/v1/search',
+        'https://api.search.brave.com/res/v1/web/search'
+    ]
+    header_variants = [
+        ('X-Subscription-Token', BRAVE_API_KEY),
+        ('x-api-key', BRAVE_API_KEY)
+    ]
 
     for attempt in range(attempts):
-        try:
-            url = 'https://api.search.brave.com/v1/search'
-            headers = {'Authorization': f'Bearer {BRAVE_API_KEY}', 'Accept': 'application/json'}
-            params = {'q': query, 'size': size, 'source': 'news'}
-            r = requests.get(url, headers=headers, params=params, timeout=timeout)
-            try:
-                data = r.json() or {}
-            except Exception:
-                logging.debug('Brave returned non-JSON or empty response')
-                data = {}
+        for endpoint in endpoints:
+            for hname, hval in header_variants:
+                try:
+                    params = {'q': query, 'size': size, 'source': 'news'}
+                    headers = {hname: hval, 'Accept': 'application/json', 'User-Agent': 'StockSense/1.0'}
+                    logging.info(f'Trying Brave endpoint {endpoint} with header {hname}')
+                    r = requests.get(endpoint, headers=headers, params=params, timeout=timeout)
+                    logging.info(f'Brave response status: {r.status_code} for {endpoint} with header {hname}')
+                    if r.status_code == 403:
+                        # Continue to try other header/endpoint combos
+                        continue
+                    try:
+                        data = r.json() or {}
+                    except Exception:
+                        logging.debug('Brave returned non-JSON or empty response')
+                        data = {}
+                    # If we got a response (even empty dict), stop trying
+                    break
+                except Exception as e:
+                    logging.warning(f'Brave request to {endpoint} with header {hname} failed: {e}')
+                    continue
+            if data:
+                break
+        if data:
             break
-        except Exception as e:
-            logging.warning(f'Brave request attempt {attempt+1} failed: {e}')
-            if attempt < attempts - 1:
-                time.sleep(backoff * (attempt + 1))
-                continue
-            logging.warning(f'Brave search failed for query "{query}": {e}')
-            return []
+        if attempt < attempts - 1:
+            time.sleep(backoff * (attempt + 1))
 
-    # Candidate containers (tolerant)
-    candidates = data.get('articles') or data.get('data') or data.get('results') or data.get('items') or data.get('organic_results') or []
+    if not data:
+        logging.warning(f'Brave search did not return data for query "{query}"')
+
+    # Candidate containers (tolerant) - Brave API nests results under 'web'
+    candidates = data.get('web', {}).get('results') or data.get('articles') or data.get('data') or data.get('results') or data.get('items') or data.get('organic_results') or []
     for item in candidates[:size]:
         if not isinstance(item, dict):
             continue
@@ -423,63 +444,76 @@ def company_news_api():
     elif short:
         q_in_title = short
 
-    # Attempt Brave Search if key is available
+    # Attempt Brave Search (single endpoint, no retries/fallbacks)
     brave_articles = []
     if BRAVE_API_KEY:
         try:
-            brave_url = 'https://api.search.brave.com/v1/search'
-            headers = {
-                'Authorization': f'Bearer {BRAVE_API_KEY}',
-                'Accept': 'application/json'
-            }
-            # Use a simpler, company-focused query for Brave: prefer long company name or short ticker.
+            # Try Brave's news endpoint first for actual news articles
+            brave_url = 'https://api.search.brave.com/res/v1/news/search'
             brave_query = q_in_title or long_name or company or short or symbol
-            params = {
-                'q': brave_query,
-                'size': 20,
-                'source': 'news'
-            }
-            logging.info(f'Attempting Brave Search with params: {params}')
+            params = {'q': brave_query, 'count': 20}
+            headers = {'X-Subscription-Token': BRAVE_API_KEY, 'Accept': 'application/json', 'User-Agent': 'StockSense/1.0'}
+            logging.info(f'Attempting Brave News Search with params: {params}')
             r = requests.get(brave_url, headers=headers, params=params, timeout=8)
-            logging.info(f'Brave response status: {r.status_code}')
-            # If forbidden, try alternative header style (some APIs expect x-api-key)
-            if r.status_code == 403:
-                logging.warning('Brave returned 403; retrying with x-api-key header')
-                alt_headers = {'x-api-key': BRAVE_API_KEY, 'Accept': 'application/json'}
+            logging.info(f'Brave response status: {r.status_code} for {brave_url}')
+            if r.status_code != 200:
+                logging.warning(f'Brave returned non-200 status: {r.status_code}; not attempting fallback')
+            else:
                 try:
-                    r2 = requests.get(brave_url, headers=alt_headers, params=params, timeout=8)
-                    logging.info(f'Brave retry (x-api-key) status: {r2.status_code}')
-                    r = r2
+                    brave_data = r.json() or {}
                 except Exception as e:
-                    logging.warning(f'Brave retry with x-api-key failed: {e}')
-            try:
-                brave_data = r.json()
-            except Exception as e:
-                # log headers and any text for debugging
-                hdrs = {k: v for k, v in r.headers.items()} if hasattr(r, 'headers') else {}
-                logging.warning(f'Brave response not JSON: {e} ; status={getattr(r, "status_code", None)} ; headers={hdrs} ; text={getattr(r, "text", "")[:1000]}')
-                brave_data = {}
+                    hdrs = {k: v for k, v in r.headers.items()} if hasattr(r, 'headers') else {}
+                    logging.warning(f'Brave response not JSON: {e} ; status={getattr(r, "status_code", None)} ; headers={hdrs} ; text={getattr(r, "text", "")[:1000]}')
+                    brave_data = {}
 
-            logging.debug(f'Brave response keys: {list(brave_data.keys())}')
+                logging.debug(f'Brave response keys: {list(brave_data.keys())}')
 
-            # Tolerant parsing: look for common keys
-            candidates = brave_data.get('articles') or brave_data.get('data') or brave_data.get('results') or brave_data.get('items') or brave_data.get('organic_results') or []
-            logging.info(f'Brave candidates count: {len(candidates)}')
-            for item in candidates:
-                # item could be dict with different shapes
-                title = item.get('title') or item.get('headline') or item.get('name')
-                link = item.get('url') or item.get('link') or item.get('sourceUrl')
-                source = (item.get('source') or {}).get('name') if isinstance(item.get('source'), dict) else item.get('source')
-                published = item.get('publishedAt') or item.get('published') or item.get('date')
-                desc = item.get('description') or item.get('snippet') or item.get('summary')
-                if title and link:
-                    brave_articles.append({
-                        'title': title,
-                        'url': link,
-                        'source': source,
-                        'publishedAt': published,
-                        'description': desc
-                    })
+                # Tolerant parsing: look for common keys - Brave news API nests results under 'results'
+                candidates = brave_data.get('results') or brave_data.get('web', {}).get('results') or brave_data.get('articles') or brave_data.get('data') or brave_data.get('items') or brave_data.get('organic_results') or []
+                logging.info(f'Brave candidates count: {len(candidates)}')
+
+                # Whitelist of trusted news/finance domains to prefer
+                trusted_news_domains = ['bseindia.com', 'nseindia.com', 'reuters.com', 'ap.org', 'bbc.com', 'cnbc.com', 'bloomberg.com', 'economictimes.com', 'moneycontrol.com', 'theguardian.com', 'ndtv.com', 'thehindu.com', 'deccanchronicle.com', 'theprintindia.com', 'businesstoday.com', 'hindustantimes.com', 'tribune.com']
+                excluded_domains = ['wikipedia.org', 'linkedin.com', 'facebook.com', 'instagram.com', 'twitter.com', 'youtube.com']
+                news_like = []
+                for item in candidates:
+                    # item could be dict with different shapes
+                    title = (item.get('title') or item.get('headline') or item.get('name') or '').strip()
+                    link = (item.get('url') or item.get('link') or item.get('sourceUrl') or item.get('unescapedUrl') or '')
+                    source = (item.get('source') or {}).get('name') if isinstance(item.get('source'), dict) else item.get('source')
+                    published = item.get('publishedAt') or item.get('published') or item.get('date') or item.get('page_age')
+                    desc = (item.get('description') or item.get('snippet') or item.get('summary') or item.get('excerpt') or '')
+
+                    # Skip if no title or URL
+                    if not title or not link:
+                        continue
+
+                    # Check domain
+                    link_lower = link.lower()
+                    
+                    # Exclude social/info pages
+                    if any(domain in link_lower for domain in excluded_domains):
+                        continue
+                    
+                    # Prefer trusted news domains, accept others only if they look like articles
+                    is_trusted_domain = any(domain in link_lower for domain in trusted_news_domains)
+                    
+                    if not is_trusted_domain:
+                        # For untrusted domains, be stricter: require news/article/press keywords
+                        path = ''
+                        try:
+                            path = link.split('/', 3)[-1].lower()
+                        except Exception:
+                            path = ''
+                        has_news_keyword = any(k in path or k in link_lower or k in title.lower() for k in ('news', 'press-release', 'press', 'article', 'story', 'pressrelease'))
+                        if not has_news_keyword:
+                            continue
+
+                    news_like.append({'title': title, 'url': link, 'source': source, 'publishedAt': published, 'description': desc})
+
+                logging.info(f'Brave news-like candidates: {len(news_like)}')
+                for a in news_like:
+                    brave_articles.append(a)
         except Exception as e:
             logging.warning(f'Brave Search failed for {query}: {e}')
 
@@ -518,51 +552,9 @@ def company_news_api():
             })
         return jsonify({'articles': simplified})
 
-    # If Brave returned no matching articles or was unavailable/forbidden, try NewsAPI as a fallback
-    logging.warning('Brave did not return any matching company articles; attempting NewsAPI fallback')
-    if not NEWS_API_KEY:
-        logging.warning('NEWS_API_KEY not configured; returning empty list')
-        return jsonify({'articles': []})
-
-    # Build NewsAPI query (use company long name or short ticker)
-    news_query = long_name or company or short or symbol
-    news_url = "https://newsapi.org/v2/everything"
-    news_params = {
-        'q': news_query,
-        'language': 'en',
-        'sortBy': 'publishedAt',
-        'apiKey': NEWS_API_KEY,
-        'pageSize': 20
-    }
-    logging.info(f'Falling back to NewsAPI with query: {news_query}')
-    try:
-        resp = requests.get(news_url, params=news_params, timeout=8)
-        data = resp.json()
-    except Exception as e:
-        logging.error(f'NewsAPI fallback failed: {e}')
-        return jsonify({'articles': []})
-
-    articles = data.get('articles', [])[:20]
-    filtered = []
-    for a in articles:
-        title = normalize(a.get('title') or '')
-        desc = normalize(a.get('description') or '')
-        text = title + ' ' + desc
-        if any(tok in text or any(p in text for p in tok.split()) for tok in tokens):
-            filtered.append(a)
-
-    result_articles = filtered[:5]
-    simplified = []
-    for a in result_articles:
-        simplified.append({
-            'title': a.get('title'),
-            'url': a.get('url'),
-            'source': (a.get('source') or {}).get('name'),
-            'publishedAt': a.get('publishedAt'),
-            'description': a.get('description')
-        })
-
-    return jsonify({'articles': simplified})
+    # No articles found from Brave — do not fallback to NewsAPI; return empty list
+    logging.info('No matching Brave articles found; returning empty articles list')
+    return jsonify({'articles': []})
 
 
 # Chat endpoint: use OpenAI official API
