@@ -48,79 +48,11 @@ from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
 import time
-import re
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
-from config import NEWS_API_KEY, BRAVE_API_KEY, OPENAI_API_KEY
+from config import NEWS_API_KEY, BRAVE_API_KEY
+from chatbot_service import query_chatgpt_with_brave
 import peewee
 
-def brave_search(query, size=4, timeout=8):
-    """Perform a Brave Search (news) query and return simplified results.
-    Returns a list of {'title','url','snippet'}.
-    This is best-effort and tolerant to different response shapes.
-    """
-    results = []
-    if not BRAVE_API_KEY:
-        return results
-
-    # Try multiple Brave endpoints and header patterns to maximize chance of success.
-    attempts = 2
-    backoff = 0.8
-    data = {}
-    endpoints = [
-        'https://api.search.brave.com/v1/search',
-        'https://api.search.brave.com/res/v1/web/search'
-    ]
-    header_variants = [
-        ('X-Subscription-Token', BRAVE_API_KEY),
-        ('x-api-key', BRAVE_API_KEY)
-    ]
-
-    for attempt in range(attempts):
-        for endpoint in endpoints:
-            for hname, hval in header_variants:
-                try:
-                    params = {'q': query, 'size': size, 'source': 'news'}
-                    headers = {hname: hval, 'Accept': 'application/json', 'User-Agent': 'StockSense/1.0'}
-                    logging.info(f'Trying Brave endpoint {endpoint} with header {hname}')
-                    r = requests.get(endpoint, headers=headers, params=params, timeout=timeout)
-                    logging.info(f'Brave response status: {r.status_code} for {endpoint} with header {hname}')
-                    if r.status_code == 403:
-                        # Continue to try other header/endpoint combos
-                        continue
-                    try:
-                        data = r.json() or {}
-                    except Exception:
-                        logging.debug('Brave returned non-JSON or empty response')
-                        data = {}
-                    # If we got a response (even empty dict), stop trying
-                    break
-                except Exception as e:
-                    logging.warning(f'Brave request to {endpoint} with header {hname} failed: {e}')
-                    continue
-            if data:
-                break
-        if data:
-            break
-        if attempt < attempts - 1:
-            time.sleep(backoff * (attempt + 1))
-
-    if not data:
-        logging.warning(f'Brave search did not return data for query "{query}"')
-
-    # Candidate containers (tolerant) - Brave API nests results under 'web'
-    candidates = data.get('web', {}).get('results') or data.get('articles') or data.get('data') or data.get('results') or data.get('items') or data.get('organic_results') or []
-    for item in candidates[:size]:
-        if not isinstance(item, dict):
-            continue
-        title = item.get('title') or item.get('headline') or item.get('name') or ''
-        link = item.get('url') or item.get('link') or item.get('sourceUrl') or item.get('unescapedUrl') or ''
-        snippet = item.get('description') or item.get('snippet') or item.get('summary') or item.get('excerpt') or ''
-        # Some Brave shapes nest source/name
-        if not title and isinstance(item.get('source'), dict):
-            title = item.get('source', {}).get('name', '')
-        if title or snippet:
-            results.append({'title': title, 'url': link, 'snippet': snippet})
-    return results
 
 @app.route('/about')
 def about():
@@ -560,324 +492,89 @@ def company_news_api():
 # Chat endpoint: use OpenAI official API
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
-    payload = request.get_json() or {}
-    logging.info(f"Incoming chat payload: {payload}")
-    messages = payload.get('messages')
-    # tolerate a single-string message payload (compatibility with clients)
-    if messages is None:
-        single = payload.get('message') or payload.get('text') or payload.get('content')
-        if single:
-            messages = [{'role': 'user', 'content': single}]
-    model = payload.get('model', 'gpt-5-mini')
-    company = payload.get('company', '')
-    # optional metadata
-    referer = payload.get('referer')
-    title = payload.get('title')
-    period = payload.get('period', '1mo')
-    symbol_for_history = payload.get('symbol') or company
-
-    if not messages:
-        return jsonify({'error': 'No messages provided', 'received': payload}), 400
-
-    # Build base system prompt
-    base_system = "You are a helpful AI assistant specialized in stock market and company analysis. Always respond in English only."
-    if company:
-        base_system += f" The user is asking questions about {company}. Provide informative, accurate and concise responses specific to this company."
-
-    # Heuristic: detect when user likely needs up-to-date filings/financials/news
-    user_text = ''
+    """
+    Chat API endpoint that uses Brave Search + ChatGPT for enriched responses.
+    
+    Workflow:
+    1. Receives user message and context
+    2. Calls chatbot_service which:
+       - Detects if Brave Search enrichment is needed
+       - Fetches latest data/news from Brave Search
+       - Queries ChatGPT with enriched context
+    3. Returns ChatGPT response with source information
+    """
     try:
-        # messages is expected to be a list of dicts; find last user message text
+        payload = request.get_json() or {}
+        logging.info(f"Chat API request - payload keys: {list(payload.keys())}")
+        
+        # Extract parameters
+        messages = payload.get('messages')
+        if not messages:
+            single = payload.get('message') or payload.get('text') or payload.get('content')
+            if single:
+                messages = [{'role': 'user', 'content': single}]
+        
+        if not messages:
+            return jsonify({'error': 'No messages provided'}), 400
+        
+        # Get user's last message
+        user_message = ""
         if isinstance(messages, list) and len(messages) > 0:
-            for m in reversed(messages):
-                if isinstance(m, dict) and m.get('role') == 'user' and m.get('content'):
-                    user_text = str(m.get('content'))
+            for msg in reversed(messages):
+                if isinstance(msg, dict) and msg.get('role') == 'user' and msg.get('content'):
+                    user_message = str(msg.get('content'))
                     break
-    except Exception:
-        user_text = ''
-
-    finance_triggers = ['profit', 'net profit', 'pat', 'earnings', 'fy', 'fiscal', 'annual report', 'filing', 'results', 'quarter', 'q1', 'q2', 'q3', 'q4', 'fy202', 'fy']
-    should_call_brave = False
-    try:
-        lower = user_text.lower()
-
-        # Try to detect a company mention in the user's text if the frontend didn't provide `company`
-        detected_company = company
-        if not detected_company and lower:
-            for disp_name in company_tickers.keys():
-                if disp_name.lower() in lower:
-                    detected_company = disp_name
-                    break
-        # Also try matching common short tickers (icici, hdfc, etc.)
-        if not detected_company and lower:
-            for disp_name, tk in company_tickers.items():
-                if tk and tk.lower() in lower:
-                    detected_company = disp_name
-                    break
-
-        # Basic heuristic: if user text contains finance words, mark for Brave if key present
-        if any(tok in lower for tok in finance_triggers) and BRAVE_API_KEY:
-            should_call_brave = True
-
-        # Stronger explicit-detection: if user asked for a metric + year/FY (e.g. "standalone profit FY2024-2025"), prefetch Brave
-        explicit_metric_tokens = ['standalone', 'consolidated', 'pat', 'profit', 'net profit', 'netprofit']
-        has_metric = any(tok in lower for tok in explicit_metric_tokens)
-        has_year = bool(re.search(r"\b(20\d{2})(?:[-/–—](20\d{2}|\d{2}))?\b", lower)) or bool(re.search(r"\bfy\s*\d{2,4}\b", lower))
-        if has_metric and has_year and BRAVE_API_KEY:
-            should_call_brave = True
-
-    except Exception:
-        should_call_brave = False
-
-    brave_context = ''
-    # Use detected_company if frontend did not provide one
-    try:
-        detected_company = detected_company if 'detected_company' in locals() else company
-    except Exception:
-        detected_company = company
-
-    if should_call_brave and detected_company:
-        try:
-            brave_q = f"{detected_company} {user_text}"
-            brave_hits = brave_search(brave_q, size=4)
-            if brave_hits:
-                parts = []
-                for h in brave_hits:
-                    t = h.get('title') or ''
-                    s = h.get('snippet') or ''
-                    u = h.get('url') or ''
-                    snippet = (t + ': ' + s).strip(': ').strip()
-                    if u:
-                        snippet += f" (source: {u})"
-                    parts.append(snippet)
-                brave_context = '\nSources (Brave Search):\n' + '\n- '.join(parts)
-                # keep context reasonably small
-                if len(brave_context) > 1500:
-                    brave_context = brave_context[:1470] + '...'
-                logging.info(f'Brave context added for chat: {brave_q} (hits={len(brave_hits)})')
-        except Exception as e:
-            logging.debug(f'Failed to add Brave context: {e}')
-
-    # If OpenAI key is configured, fetch recent history and call OpenAI's Chat API
-    if OPENAI_API_KEY:
-        try:
-            # Fetch recent historical prices for context (best-effort)
-            history_summary = ''
-            recent_points = []
-            try:
-                if symbol_for_history:
-                    tk = yf.Ticker(symbol_for_history)
-                    hist = tk.history(period=period, timeout=15)
-                    if hist is not None and not hist.empty and 'Close' in hist.columns:
-                        # gather up to last 14 closes
-                        for date, row in hist.tail(14).iterrows():
-                            try:
-                                close_price = float(row['Close'])
-                                recent_points.append({'x': date.strftime('%Y-%m-%d'), 'y': close_price})
-                            except Exception:
-                                continue
-                        if recent_points:
-                            first = recent_points[0]['y']
-                            last = recent_points[-1]['y']
-                            pct = ((last - first) / first * 100) if first and first != 0 else 0.0
-                            history_summary = f"Recent close prices ({len(recent_points)} points, period={period}): last_close={last:.2f}, change={pct:.2f}% over sample."
-            except Exception as e:
-                logging.debug(f'Could not fetch history for chat context: {e}')
-
-            system_prompt = base_system
-            if history_summary:
-                system_prompt += "\nContext: " + history_summary
-                # include a compact JSON-like snippet for precise values
-                snippet = ', '.join([f"{p['x']}:{p['y']:.2f}" for p in recent_points])
-                system_prompt += f"\nRecent closes: [{snippet}]"
-
-            # Append Brave search context when available
-            try:
-                if brave_context:
-                    system_prompt += "\n" + brave_context
-            except Exception:
-                pass
-
-            messages_with_system = [{'role': 'system', 'content': system_prompt}] + messages
-
-            headers = {
-                'Authorization': f'Bearer {OPENAI_API_KEY}',
-                'Content-Type': 'application/json'
-            }
-            if referer:
-                headers['HTTP-Referer'] = referer
-            if title:
-                headers['X-Title'] = title
-
-            body = {
-                'model': model,
-                'messages': messages_with_system,
-                'max_completion_tokens': 800
-            }
-
-            # Log the outbound request body for debugging
-            logging.info(f"OpenAI request body: model={model}, messages_count={len(messages_with_system)}")
-            r = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=body, timeout=30)
-            try:
-                jr = r.json()
-            except Exception:
-                logging.error('OpenAI returned non-JSON response', exc_info=True)
-                return jsonify({'error': 'OpenAI returned non-JSON response', 'status_code': r.status_code, 'text': r.text}), 502
-
-            # Try to extract a readable assistant text from the provider response
-            def _find_first_string(obj):
-                # Recursively find the first non-empty string leaf in nested dicts/lists
-                if obj is None:
-                    return None
-                if isinstance(obj, str):
-                    s = obj.strip()
-                    return s if len(s) > 0 else None
-                if isinstance(obj, dict):
-                    # Preferred path: choices[0].message.content
-                    if 'choices' in obj and isinstance(obj['choices'], list) and len(obj['choices']) > 0:
-                        ch = obj['choices'][0]
-                        # Prefer the message.content field if present to avoid picking role labels
-                        msg = ch.get('message') or ch.get('text') or ch.get('delta')
-                        if isinstance(msg, dict) and 'content' in msg:
-                            candidate = _find_first_string(msg.get('content'))
-                            if candidate:
-                                return candidate
-                        # fallback to scanning the message dict
-                        candidate = _find_first_string(msg)
-                        if candidate:
-                            return candidate
-                    # If this dict looks like a message (has content), prefer it
-                    if 'content' in obj:
-                        candidate = _find_first_string(obj.get('content'))
-                        if candidate:
-                            return candidate
-                    # Otherwise scan values but avoid returning short keys like 'assistant' first
-                    for k, v in obj.items():
-                        # skip obvious metadata keys early
-                        if k in ('role', 'id', 'object', 'type', 'finish_reason'):
-                            continue
-                        res = _find_first_string(v)
-                        if res:
-                            return res
-                    # last resort, scan all values including metadata
-                    for v in obj.values():
-                        res = _find_first_string(v)
-                        if res:
-                            return res
-                if isinstance(obj, list):
-                    for item in obj:
-                        res = _find_first_string(item)
-                        if res:
-                            return res
-                return None
-
-            assistant_text = _find_first_string(jr)
-
-            payload_out = {'status_code': r.status_code, 'result': jr, 'assistant_text': assistant_text}
-
-            # If the assistant replied with uncertainty / a clarifying question, attempt a Brave search and re-query OpenAI
-            def _is_uncertain_reply(text, raw):
-                if not text:
-                    return True
-                t = text.lower()
-                uncertain_phrases = [
-                    "do you mean",
-                    "which",
-                    "do you want",
-                    "please confirm",
-                    "i don't have",
-                    "i do not have",
-                    "i'm not sure",
-                    "i cannot",
-                    "could you",
-                    "please specify",
-                    "which one",
-                    "do you mean icici",
-                    "do you mean icici bank",
-                ]
-                for p in uncertain_phrases:
-                    if p in t:
-                        return True
-                # If the assistant responded with a short question-like reply (less than 60 chars and contains '?')
-                if '?' in text and len(text) < 120:
-                    return True
-                # fallback: if the provider returned a finish reason 'length' without content, treat as uncertain
-                try:
-                    if isinstance(raw, dict) and raw.get('choices') and raw['choices'][0].get('finish_reason') == 'length' and (not text or len(text) < 20):
-                        return True
-                except Exception:
-                    pass
-                return False
-
-            tried_brave = False
-            if r.status_code == 200 and BRAVE_API_KEY and company and _is_uncertain_reply(assistant_text, jr):
-                try:
-                    # Build a Brave query using the last user message (if available)
-                    user_query = ''
-                    if isinstance(messages, list) and len(messages) > 0:
-                        for m in reversed(messages):
-                            if isinstance(m, dict) and m.get('role') == 'user' and m.get('content'):
-                                user_query = str(m.get('content'))
-                                break
-
-                    if user_query:
-                        brave_hits = brave_search(f"{company} {user_query}", size=4)
-                        if brave_hits:
-                            parts = []
-                            for h in brave_hits:
-                                t = h.get('title') or ''
-                                s = h.get('snippet') or ''
-                                u = h.get('url') or ''
-                                snippet = (t + ': ' + s).strip(': ').strip()
-                                if u:
-                                    snippet += f" (source: {u})"
-                                parts.append(snippet)
-                            brave_context2 = '\nSources (Brave Search):\n' + '\n- '.join(parts)
-                            if len(brave_context2) > 1500:
-                                brave_context2 = brave_context2[:1470] + '...'
-
-                            # Rebuild system prompt with brave_context2 and re-query OpenAI
-                            system_prompt2 = base_system
-                            if history_summary:
-                                system_prompt2 += "\nContext: " + history_summary
-                                snippet2 = ', '.join([f"{p['x']}:{p['y']:.2f}" for p in recent_points])
-                                system_prompt2 += f"\nRecent closes: [{snippet2}]"
-                            system_prompt2 += "\n" + brave_context2
-
-                            messages_with_system2 = [{'role': 'system', 'content': system_prompt2}] + messages
-                            body2 = {
-                                'model': model,
-                                'messages': messages_with_system2,
-                                'max_completion_tokens': 800
-                            }
-                            logging.info(f"Retrying OpenAI with Brave context: messages_count={len(messages_with_system2)}")
-                            r2 = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=body2, timeout=30)
-                            try:
-                                jr2 = r2.json()
-                            except Exception:
-                                jr2 = None
-                            assistant_text2 = _find_first_string(jr2) if jr2 else None
-                            payload_out = {'status_code': r2.status_code if jr2 else r.status_code, 'result': jr2 or jr, 'assistant_text': assistant_text2 or assistant_text, 'used_brave': True}
-                            tried_brave = True
-                except Exception as e:
-                    logging.debug(f'Brave fallback failed: {e}')
-
-            # Always return 200 to the frontend and include provider status + body so the client can display readable errors
-            if r.status_code != 200:
-                logging.error(f"OpenAI API returned status {r.status_code}: {jr}")
-                return jsonify(payload_out), 200
-
-            return jsonify(payload_out), 200
-
-        except requests.exceptions.Timeout:
-            return jsonify({'error': 'OpenAI request timed out'}), 504
-        except Exception as e:
-            logging.error(f'OpenAI Chat API error: {e}', exc_info=True)
-            return jsonify({'error': 'OpenAI Chat API error'}), 500
-
-    # If OpenAI is not configured, return an explicit error
-    logging.error('OpenAI API key is not configured on the server')
-    return jsonify({'error': 'OpenAI API key not configured on server'}), 500
+        
+        if not user_message:
+            return jsonify({'error': 'No user message found'}), 400
+        
+        # Extract context parameters
+        company_name = payload.get('company', '')
+        symbol = payload.get('symbol', '') or company_name
+        period = payload.get('period', '1mo')
+        
+        logging.info(f"Chat - company: {company_name}, symbol: {symbol}, query: {user_message[:50]}...")
+        
+        # Use the new chatbot service
+        result = query_chatgpt_with_brave(
+            user_message=user_message,
+            company_name=company_name,
+            symbol=symbol,
+            period=period,
+            conversation_history=messages[:-1] if len(messages) > 1 else None
+        )
+        
+        if not result.get('success'):
+            error_msg = result.get('error', 'Unknown error occurred')
+            logging.warning(f"Chat failed: {error_msg}")
+            return jsonify({'error': error_msg}), 400
+        
+        # Build response
+        response_text = result.get('response', '')
+        sources_count = result.get('sources_count', 0)
+        
+        # Return in OpenAI-compatible format for frontend compatibility
+        payload_out = {
+            'status_code': 200,
+            'result': {
+                'choices': [{
+                    'message': {'content': response_text},
+                    'finish_reason': 'stop'
+                }]
+            },
+            'assistant_text': response_text,
+            'sources_count': sources_count,
+            'brave_enriched': sources_count > 0
+        }
+        
+        if sources_count > 0:
+            logging.info(f"Chat response enriched with {sources_count} Brave sources")
+        
+        return jsonify(payload_out), 200
+    
+    except Exception as e:
+        logging.error(f'Chat API error: {e}', exc_info=True)
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 # Error handlers
 @app.errorhandler(404)
