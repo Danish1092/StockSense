@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Chatbot - StockSense{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-screen bg-black">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-black via-gray-900 to-black border-b border-green-800/30 py-4">
+        <div class="max-w-4xl mx-auto px-6">
+            <h1 class="text-xl font-bold text-green-400">StockSense Chat</h1>
+            <p class="text-xs text-gray-400">Ask questions about the stock market</p>
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div id="chatWindow" class="flex-1 overflow-y-auto max-w-4xl mx-auto w-full px-6 py-8 space-y-4">
+        <!-- Welcome message -->
+        <div class="flex justify-center py-8">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-green-300 mb-2">Welcome to StockSense Chat</h2>
+                <p class="text-gray-400 text-sm">Ask me anything about stocks, markets, companies, or financial analysis.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="border-t border-green-800/30 bg-black py-6">
+        <div class="max-w-4xl mx-auto px-6">
+            <form id="chatForm" class="flex gap-3 items-end">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Ask a question about stocks..." 
+                    class="flex-1 bg-gray-800 text-white px-4 py-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 text-sm" 
+                    rows="1"
+                    style="max-height: 120px;"
+                ></textarea>
+                <button 
+                    type="submit" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                    Send
+                </button>
+            </form>
+            <p id="status" class="text-xs text-gray-500 mt-2 text-center"></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chatWindow = document.getElementById('chatWindow');
+const chatForm = document.getElementById('chatForm');
+const messageInput = document.getElementById('messageInput');
+const statusEl = document.getElementById('status');
+
+// Auto-resize textarea
+messageInput.addEventListener('input', () => {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+});
+
+function appendMessage(role, text, hasSources = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+    
+    const bubble = document.createElement('div');
+    if (role === 'user') {
+        bubble.className = 'bg-green-700 text-white px-4 py-3 rounded-lg max-w-2xl text-sm leading-relaxed';
+    } else {
+        bubble.className = 'bg-gray-800 text-gray-100 px-4 py-3 rounded-lg max-w-2xl text-sm leading-relaxed';
+    }
+    bubble.textContent = text;
+    msgDiv.appendChild(bubble);
+    
+    // Add sources indicator for assistant messages
+    if (role === 'assistant' && hasSources) {
+        const sourceIndicator = document.createElement('div');
+        sourceIndicator.className = 'text-xs text-gray-500 mt-1 flex items-center gap-1';
+        sourceIndicator.innerHTML = '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a6 6 0 016 6v3a3 3 0 01-3 3H7a1 1 0 100 2h2a5 5 0 005-5v-3a8 8 0 00-8-8H6a1 1 0 000 2H4a2 2 0 00-2 2v7a2 2 0 002 2h2a1 1 0 100-2H4V5z"></path></svg> Latest info from web';
+        msgDiv.appendChild(sourceIndicator);
+    }
+    
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+
+    appendMessage('user', msg);
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    statusEl.textContent = 'Thinking...';
+
+    try {
+        const res = await fetch('/api/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const hasSources = data.has_sources || false;
+            appendMessage('assistant', data.response || 'No response', hasSources);
+        } else {
+            appendMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        appendMessage('assistant', 'Network error: ' + err.message);
+    } finally {
+        statusEl.textContent = '';
+    }
+});
+</script>
+{% endblock %}

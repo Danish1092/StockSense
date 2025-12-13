@@ -447,7 +447,7 @@
         // Chatbot: simple client that forwards user message to /api/chat
         let chatWindow, chatStatus, chatInput, sendChatBtn;
 
-        function appendMessage(role, text) {
+        function appendMessage(role, text, hasSources = false) {
             if (!chatWindow) return;
             
             const messageContainer = document.createElement('div');
@@ -471,6 +471,14 @@
             }
             
             contentWrapper.appendChild(bubble);
+
+            // If assistant message and sources exist, add small badge
+            if (role !== 'user' && hasSources) {
+                const badge = document.createElement('div');
+                badge.className = 'text-xs text-gray-500 mt-1 ml-1 flex items-center gap-1';
+                badge.innerHTML = '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a6 6 0 016 6v3a3 3 0 01-3 3H7a1 1 0 100 2h2a5 5 0 005-5v-3a8 8 0 00-8-8H6a1 1 0 000 2H4a2 2 0 00-2 2v7a2 2 0 002 2h2a1 1 0 100-2H4V5z"></path></svg> Latest info from web';
+                contentWrapper.appendChild(badge);
+            }
             messageContainer.appendChild(contentWrapper);
             chatWindow.appendChild(messageContainer);
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -532,7 +540,9 @@
                     assistantText = JSON.stringify(json.result || json, null, 2);
                 }
 
-                appendMessage('assistant', assistantText);
+                // Determine if server signaled Brave enrichment
+                const hasSources = Boolean(json && (json.brave_enriched || (json.sources_count && json.sources_count > 0) || json.has_sources));
+                appendMessage('assistant', assistantText, hasSources);
             } catch (e) {
                 chatStatus.textContent = '';
                 appendMessage('assistant', 'Error: ' + (e && e.message ? e.message : e));

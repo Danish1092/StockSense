@@ -192,7 +192,9 @@ def query_chatgpt_with_brave(
     company_name: str = "",
     symbol: str = "",
     period: str = "1mo",
-    conversation_history: Optional[List[Dict]] = None
+    conversation_history: Optional[List[Dict]] = None,
+    brave_hits: Optional[List[Dict]] = None,
+    force_brave: bool = False
 ) -> Dict:
     """
     Query ChatGPT with Brave Search enrichment.
@@ -224,39 +226,42 @@ def query_chatgpt_with_brave(
         }
     
     try:
-        # Determine if Brave Search is needed
-        enrich_query = should_enrich_with_brave(user_message)
-        
+        # Determine if Brave Search is needed or provided
         brave_context = ""
         brave_sources = []
-        
-        # Fetch Brave Search results if needed
-        if enrich_query:
-            search_query = f"{company_name} {user_message}".strip()
-            brave_hits = brave_search(search_query, size=4)
-            
-            if brave_hits:
-                for hit in brave_hits:
-                    title = hit.get('title', '')
-                    snippet = hit.get('snippet', '')
-                    url = hit.get('url', '')
-                    
-                    # Combine title and snippet
-                    source_text = (title + ': ' + snippet).strip(': ').strip()
-                    
-                    if url:
-                        source_text += f" (Source: {url})"
-                    
-                    brave_sources.append(source_text)
-                
-                if brave_sources:
-                    brave_context = "\n\nExternal Knowledge (Brave Search - Latest News & Data):\n" + "\n- ".join(brave_sources)
-                    
-                    # Keep context reasonably sized
-                    if len(brave_context) > 2000:
-                        brave_context = brave_context[:1970] + "...\n[Note: More sources available but truncated for length]"
-                    
-                    logger.info(f'Brave enrichment: {len(brave_sources)} sources for: {company_name}')
+
+        # If pre-fetched brave_hits provided, use them. Otherwise, decide based on should_enrich or force flag
+        if brave_hits is not None:
+            hits = brave_hits
+        else:
+            enrich_query = force_brave or should_enrich_with_brave(user_message)
+            hits = []
+            if enrich_query:
+                search_query = f"{company_name} {user_message}".strip()
+                hits = brave_search(search_query, size=4)
+
+        if hits:
+            for hit in hits:
+                title = hit.get('title', '')
+                snippet = hit.get('snippet', '')
+                url = hit.get('url', '')
+
+                # Combine title and snippet
+                source_text = (title + ': ' + snippet).strip(': ').strip()
+
+                if url:
+                    source_text += f" (Source: {url})"
+
+                brave_sources.append(source_text)
+
+            if brave_sources:
+                brave_context = "\n\nExternal Knowledge (Brave Search - Latest News & Data):\n" + "\n- ".join(brave_sources)
+
+                # Keep context reasonably sized
+                if len(brave_context) > 2000:
+                    brave_context = brave_context[:1970] + "...\n[Note: More sources available but truncated for length]"
+
+                logger.info(f'Brave enrichment: {len(brave_sources)} sources for: {company_name}')
         
         # Get stock price history context
         history_context = ""

@@ -22,7 +22,7 @@ if not SECRET_KEY:
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Set the default prediction model. 0 for XGBoost, 1 for LSTM.
-app.config['DEFAULT_MODEL'] = 0
+app.config['DEFAULT_MODEL'] = 1
 
 # Configure session management
 app.config['SESSION_TYPE'] = 'filesystem'  # Store session data in the file system

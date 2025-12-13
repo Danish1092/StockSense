@@ -50,7 +50,7 @@ import logging
 import time
 from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
 from config import NEWS_API_KEY, BRAVE_API_KEY
-from chatbot_service import query_chatgpt_with_brave
+from chatbot_service import query_chatgpt_with_brave, brave_search
 import peewee
 
 
@@ -312,6 +312,52 @@ def news():
     return render_template("news.html", articles=articles, region=region)
 
 
+# Chatbot page
+@app.route('/chatbot')
+def chatbot():
+    return render_template('chatbot.html')
+
+
+# Chatbot API endpoint (AJAX) - with Brave Search enrichment
+@app.route('/api/chatbot', methods=['POST'])
+def chatbot_api():
+    try:
+        data = request.get_json() or {}
+        message = (data.get('message') or '').strip()
+        company = data.get('company', '')
+        symbol = data.get('symbol', '')
+
+        if not message:
+            return jsonify({'success': False, 'error': 'No message provided'}), 400
+
+        # First, fetch Brave Search results (always) so ChatGPT receives external sources
+        search_query = f"{company} {message}".strip()
+        brave_hits = []
+        try:
+            brave_hits = brave_search(search_query, size=4)
+        except Exception as e:
+            logging.debug(f'Brave search failed for chatbot_api: {e}')
+
+        result = query_chatgpt_with_brave(
+            message,
+            company_name=company,
+            symbol=symbol,
+            period='1mo',
+            brave_hits=brave_hits,
+            force_brave=True
+        )
+        
+        # Add source information to response
+        if result.get('success'):
+            result['has_sources'] = bool(result.get('sources_count', 0))
+            result['sources_count'] = result.get('sources_count', 0)
+        
+        return jsonify(result)
+    except Exception as e:
+        logging.exception('Chatbot API error')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # Company-specific news API (returns top 5 headlines for a given company/symbol)
 @app.route('/api/company-news')
 def company_news_api():
@@ -535,13 +581,23 @@ def chat_api():
         
         logging.info(f"Chat - company: {company_name}, symbol: {symbol}, query: {user_message[:50]}...")
         
-        # Use the new chatbot service
+        # First, fetch Brave Search results so ChatGPT receives external sources
+        search_query = f"{company_name} {user_message}".strip()
+        brave_hits = []
+        try:
+            brave_hits = brave_search(search_query, size=4)
+        except Exception as e:
+            logging.debug(f'Brave search failed in chat_api: {e}')
+
+        # Use the new chatbot service, passing pre-fetched Brave hits
         result = query_chatgpt_with_brave(
             user_message=user_message,
             company_name=company_name,
             symbol=symbol,
             period=period,
-            conversation_history=messages[:-1] if len(messages) > 1 else None
+            conversation_history=messages[:-1] if len(messages) > 1 else None,
+            brave_hits=brave_hits,
+            force_brave=True
         )
         
         if not result.get('success'):
