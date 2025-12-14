@@ -139,67 +139,400 @@
             </div>
         </div>
     </section>
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto">
-            <div class="relative">
-                <input type="text" id="stockSearch" placeholder="Search for stocks, companies or brands..." class="w-full px-6 py-4 rounded-lg glass-effect border border-gray-700 text-white placeholder-gray-400 focus:outline-none text-lg" />
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <!-- ================= TOP GAINERS ================= -->
+<div class="container mx-auto px-4 py-10">
+    <div class="glass-effect rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-green-400 mb-6 text-center">
+            🔼 Top 10 Gainers
+        </h2>
+
+        <div class="relative overflow-hidden">
+            <div id="gainersTrack"
+                 class="flex gap-4 transition-transform duration-700 ease-in-out">
+
+                <!-- Gainers Cards -->
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">TCS</h3>
+                    <p class="text-gray-300 text-sm">₹3895.40</p>
+                    <p class="text-green-400 font-bold">+3.25%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">RELIANCE</h3>
+                    <p class="text-gray-300 text-sm">₹2510.10</p>
+                    <p class="text-green-400 font-bold">+2.90%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">HDFCBANK</h3>
+                    <p class="text-gray-300 text-sm">₹1678.00</p>
+                    <p class="text-green-400 font-bold">+2.45%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">INFY</h3>
+                    <p class="text-gray-300 text-sm">₹1589.60</p>
+                    <p class="text-green-400 font-bold">+2.30%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">ICICIBANK</h3>
+                    <p class="text-gray-300 text-sm">₹1098.75</p>
+                    <p class="text-green-400 font-bold">+2.10%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">LT</h3>
+                    <p class="text-gray-300 text-sm">₹3625.20</p>
+                    <p class="text-green-400 font-bold">+1.95%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">AXISBANK</h3>
+                    <p class="text-gray-300 text-sm">₹1125.40</p>
+                    <p class="text-green-400 font-bold">+1.85%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">SBIN</h3>
+                    <p class="text-gray-300 text-sm">₹782.10</p>
+                    <p class="text-green-400 font-bold">+1.70%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">BHARTIARTL</h3>
+                    <p class="text-gray-300 text-sm">₹1145.80</p>
+                    <p class="text-green-400 font-bold">+1.60%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">WIPRO</h3>
+                    <p class="text-gray-300 text-sm">₹485.30</p>
+                    <p class="text-green-400 font-bold">+1.45%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('top_gainers_page') }}" class="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 text-black font-semibold hover:scale-105 transition">
+                See More Companies →
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ================= TOP LOSERS ================= -->
+<div class="container mx-auto px-4 py-10">
+    <div class="glass-effect rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-red-400 mb-6 text-center">
+            🔽 Top 10 Losers
+        </h2>
+
+        <div class="relative overflow-hidden">
+            <div id="losersTrack"
+                 class="flex gap-4 transition-transform duration-700 ease-in-out">
+
+                <!-- Losers Cards -->
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">YESBANK</h3>
+                    <p class="text-gray-300 text-sm">₹15.80</p>
+                    <p class="text-red-400 font-bold">-4.90%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">LICI</h3>
+                    <p class="text-gray-300 text-sm">₹682.30</p>
+                    <p class="text-red-400 font-bold">-4.20%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">ADANIENT</h3>
+                    <p class="text-gray-300 text-sm">₹2850.75</p>
+                    <p class="text-red-400 font-bold">-3.80%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">PAYTM</h3>
+                    <p class="text-gray-300 text-sm">₹428.90</p>
+                    <p class="text-red-400 font-bold">-3.50%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">ZOMATO</h3>
+                    <p class="text-gray-300 text-sm">₹132.40</p>
+                    <p class="text-red-400 font-bold">-3.25%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">TATASTEEL</h3>
+                    <p class="text-gray-300 text-sm">₹140.85</p>
+                    <p class="text-red-400 font-bold">-3.10%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">HINDALCO</h3>
+                    <p class="text-gray-300 text-sm">₹485.20</p>
+                    <p class="text-red-400 font-bold">-2.95%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">BPCL</h3>
+                    <p class="text-gray-300 text-sm">₹452.60</p>
+                    <p class="text-red-400 font-bold">-2.70%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">COALINDIA</h3>
+                    <p class="text-gray-300 text-sm">₹468.30</p>
+                    <p class="text-red-400 font-bold">-2.55%</p>
+                </div>
+
+                <div class="glass-card min-w-[23%] p-4">
+                    <h3 class="text-white font-semibold">NTPC</h3>
+                    <p class="text-gray-300 text-sm">₹332.90</p>
+                    <p class="text-red-400 font-bold">-2.40%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('top_losers_page') }}" class="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-red-400 to-rose-500 text-black font-semibold hover:scale-105 transition">
+                See More Companies →
+            </a>
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    function scrollLeft(trackId) {
+        const track = document.getElementById(trackId);
+        let index = 0;
+        const visible = 4;
+        const total = track.children.length;
+        const cardWidth = track.children[0].offsetWidth + 16;
+
+        setInterval(() => {
+            index++;
+            if (index > total - visible) {
+                index = 0;
+                track.style.transition = "none";
+                track.style.transform = "translateX(0)";
+                setTimeout(() => {
+                    track.style.transition = "transform 0.7s ease-in-out";
+                }, 50);
+            } else {
+                track.style.transform = `translateX(-${index * cardWidth}px)`;
+            }
+        }, 2500);
+    }
+
+    function scrollRight(trackId) {
+        const track = document.getElementById(trackId);
+        const visible = 4;
+        const total = track.children.length;
+        const cardWidth = track.children[0].offsetWidth + 16;
+        let index = total - visible;
+
+        track.style.transform = `translateX(-${index * cardWidth}px)`;
+
+        setInterval(() => {
+            index--;
+            if (index < 0) {
+                index = total - visible;
+                track.style.transition = "none";
+                track.style.transform = `translateX(-${index * cardWidth}px)`;
+                setTimeout(() => {
+                    track.style.transition = "transform 0.7s ease-in-out";
+                }, 50);
+            } else {
+                track.style.transform = `translateX(-${index * cardWidth}px)`;
+            }
+        }, 2500);
+    }
+
+    // Gainers → Right to Left
+    scrollLeft("gainersTrack");
+
+    // Losers → Left to Right
+    scrollRight("losersTrack");
+</script>
+<!-- Market Insights -->
+<div class="container mx-auto px-4 py-16">
+    <div class="glass-effect rounded-lg p-10">
+        <h2 class="text-3xl font-bold text-white mb-8 text-center">
+            Market Insights
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold text-green-400 mb-2">
+                    Market Trend
+                </h3>
+                <p class="text-gray-300">
+                    Bullish momentum observed in broader indices
+                </p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold text-blue-400 mb-2">
+                    Strong Sectors
+                </h3>
+                <p class="text-gray-300">
+                    IT, Banking, and Infrastructure sectors outperforming
+                </p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-semibold text-yellow-400 mb-2">
+                    Volatility Index
+                </h3>
+                <p class="text-gray-300">
+                    Moderate volatility indicates stable trading conditions
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Prediction Highlights -->
+<div class="container mx-auto px-4 py-16">
+    <div class="glass-effect rounded-lg p-10">
+        <h2 class="text-3xl font-bold text-white mb-8 text-center">
+            Prediction Highlights
+        </h2>
+
+        <div class="space-y-6 max-w-3xl mx-auto">
+            <div class="glass-card flex justify-between items-center">
+                <div>
+                    <h3 class="text-white font-semibold">TCS</h3>
+                    <p class="text-gray-300 text-sm">
+                        Next Day Prediction
+                    </p>
+                </div>
+                <div class="text-green-400 font-bold">
+                    BUY · 78% Confidence
+                </div>
+            </div>
+
+            <div class="glass-card flex justify-between items-center">
+                <div>
+                    <h3 class="text-white font-semibold">INFY</h3>
+                    <p class="text-gray-300 text-sm">
+                        Short Term Outlook
+                    </p>
+                </div>
+                <div class="text-yellow-400 font-bold">
+                    HOLD · 71% Confidence
+                </div>
+            </div>
+
+            <div class="glass-card flex justify-between items-center">
+                <div>
+                    <h3 class="text-white font-semibold">YESBANK</h3>
+                    <p class="text-gray-300 text-sm">
+                        Risk Alert
+                    </p>
+                </div>
+                <div class="text-red-400 font-bold">
+                    SELL · 74% Confidence
                 </div>
             </div>
         </div>
     </div>
+</div>
+<!-- Why StockSense -->
+<div class="container mx-auto px-4 py-16">
+    <div class="glass-effect rounded-lg p-12">
+        <h2 class="text-3xl font-bold text-white mb-12 text-center">
+            Why Choose StockSense?
+        </h2>
 
-    <!-- Top Gainers and Top Losers -->
-    <div class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="glass-effect rounded-lg p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">Top Gainers</h2>
-                    <a href="{{ url_for('top_gainers') }}" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
-                </div>
-                <div class="space-y-4">
-                    {% for stock in gainers %}
-                    <div class="glass-card rounded-lg p-4 hover:shadow-2xl transition-all duration-300">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="text-white font-semibold">{{ stock.name or stock.symbol }}</h3>
-                                <p class="text-sm text-gray-300">Price: {{ stock.price }}</p>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-green-400 font-bold">{{ stock.change }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="glass-card p-6 text-center">
+                <h3 class="text-lg font-bold text-blue-400 mb-2">
+                    ML-Based Predictions
+                </h3>
+                <p class="text-gray-300 text-sm">
+                    Forecasts powered by trained machine learning models
+                </p>
             </div>
 
-            <div class="glass-effect rounded-lg p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white">Top Losers</h2>
-                    <a href="{{ url_for('top_losers') }}" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
-                </div>
-                <div class="space-y-4">
-                    {% for stock in losers %}
-                    <div class="glass-card rounded-lg p-4 hover:shadow-2xl transition-all duration-300">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="text-white font-semibold">{{ stock.name or stock.symbol }}</h3>
-                                <p class="text-sm text-gray-300">Price: {{ stock.price }}</p>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-red-400 font-bold">{{ stock.change }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+            <div class="glass-card p-6 text-center">
+                <h3 class="text-lg font-bold text-green-400 mb-2">
+                    Indian Market Focus
+                </h3>
+                <p class="text-gray-300 text-sm">
+                    Designed specifically for NSE & BSE stocks
+                </p>
+            </div>
+
+            <div class="glass-card p-6 text-center">
+                <h3 class="text-lg font-bold text-purple-400 mb-2">
+                    Beginner Friendly
+                </h3>
+                <p class="text-gray-300 text-sm">
+                    Simple insights for students and new investors
+                </p>
+            </div>
+
+            <div class="glass-card p-6 text-center">
+                <h3 class="text-lg font-bold text-yellow-400 mb-2">
+                    Data Driven
+                </h3>
+                <p class="text-gray-300 text-sm">
+                    Decisions backed by historical and technical data
+                </p>
             </div>
         </div>
     </div>
+</div>
+<!-- How It Works -->
+<div class="container mx-auto px-4 py-16">
+    <div class="glass-effect rounded-lg p-12">
+        <h2 class="text-3xl font-bold text-white mb-12 text-center">
+            How StockSense Works
+        </h2>
 
-    <!-- Other page sections can remain similar; omitted for brevity -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <div class="glass-card p-6">
+                <h3 class="text-blue-400 font-bold mb-2">Step 1</h3>
+                <p class="text-gray-300">
+                    User selects a stock
+                </p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-blue-400 font-bold mb-2">Step 2</h3>
+                <p class="text-gray-300">
+                    Historical market data is processed
+                </p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-blue-400 font-bold mb-2">Step 3</h3>
+                <p class="text-gray-300">
+                    ML model predicts future trend
+                </p>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-blue-400 font-bold mb-2">Step 4</h3>
+                <p class="text-gray-300">
+                    Actionable insights are displayed
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Disclaimer -->
+<div class="container mx-auto px-4 py-12">
+    <div class="glass-effect rounded-lg p-8">
+        <p class="text-center text-gray-400 text-sm leading-relaxed">
+            Disclaimer: StockSense is an educational and research-based platform.
+            The predictions and insights shown are not financial advice.
+            Users should conduct their own research before making investment decisions.
+        </p>
+    </div>
+</div>
 
 {% endblock %}
 

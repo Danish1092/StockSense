@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Top Losers | StockSense{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto px-6 py-12 text-center">
+    <h1 class="text-4xl font-extrabold text-red-400">Top Losers</h1>
+    <p class="text-red-200/80 mt-3">
+        Stocks with highest negative movement
+    </p>
+</div>
+
+<!-- Indian Losers -->
+<div class="container mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold text-red-300 mb-6">
+        🇮🇳 Indian Market – Top Losers
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">YESBANK</h3><p class="text-sm text-gray-300">₹15.80</p><p class="text-red-400 font-bold">-4.90%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">LICI</h3><p class="text-sm text-gray-300">₹682.30</p><p class="text-red-400 font-bold">-4.20%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">PAYTM</h3><p class="text-sm text-gray-300">₹428.90</p><p class="text-red-400 font-bold">-3.50%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">ZOMATO</h3><p class="text-sm text-gray-300">₹132.40</p><p class="text-red-400 font-bold">-3.25%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">ADANIENT</h3><p class="text-sm text-gray-300">₹2850.75</p><p class="text-red-400 font-bold">-3.80%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">TATASTEEL</h3><p class="text-sm text-gray-300">₹140.85</p><p class="text-red-400 font-bold">-3.10%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">HINDALCO</h3><p class="text-sm text-gray-300">₹485.20</p><p class="text-red-400 font-bold">-2.95%</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-5"><h3 class="font-bold">BPCL</h3><p class="text-sm text-gray-300">₹452.60</p><p class="text-red-400 font-bold">-2.70%</p></div>
+
+    </div>
+</div>
+
+<!-- Global Losers -->
+<div class="container mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold text-red-300 mb-6">
+        🌍 Global Market – Top Losers
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">INTC</h3><p class="text-gray-300">Intel</p><p class="text-red-400 font-bold mt-2">-1.2%</p><p class="text-sm text-gray-400">Price: $55.30</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">DIS</h3><p class="text-gray-300">Disney</p><p class="text-red-400 font-bold mt-2">-1.5%</p><p class="text-sm text-gray-400">Price: $180.75</p></div>
+        <div class="bg-slate-900/70 border border-red-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">PYPL</h3><p class="text-gray-300">PayPal</p><p class="text-red-400 font-bold mt-2">-2.0%</p><p class="text-sm text-gray-400">Price: $275.50</p></div>
+
+    </div>
+</div>
+
+<div class="border-t border-red-800/40 py-6 text-center text-gray-400 text-sm">
+    © 2025 StockSense · Educational purpose only
+</div>
+
+{% endblock %}

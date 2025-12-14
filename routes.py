@@ -77,11 +77,13 @@ def info():
 @app.route('/')
 def index():
     try:
+        show_popup = not session.get('popup_seen', False)
+        session['popup_seen'] = True
         gainers, losers = get_market_movers_cached(limit=10)
-        return render_template('index.html', gainers=gainers, losers=losers, format_number=format_number_wrapper)
+        return render_template('index.html', gainers=gainers, losers=losers, format_number=format_number_wrapper, show_popup=show_popup)
     except Exception as e:
         logging.error(f"Error fetching market data: {e}")
-        return render_template('index.html', gainers=[], losers=[])
+        return render_template('index.html', gainers=[], losers=[], show_popup=False)
 
 # Login route
 @app.route('/login', methods=['GET', 'POST'])

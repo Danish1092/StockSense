@@ -22,6 +22,12 @@ if not SECRET_KEY:
     SECRET_KEY = 'fallback-secret-key'  # Replace with a strong, random key
 app.config['SECRET_KEY'] = SECRET_KEY
 
+# Popup session tracking
+@app.before_request
+def show_popup_once():
+    if 'popup_seen' not in session:
+        session['popup_seen'] = False
+
 # Set the default prediction model. 0 for XGBoost, 1 for LSTM.
 app.config['DEFAULT_MODEL'] = 0
 

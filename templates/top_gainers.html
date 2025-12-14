@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Top Gainers | StockSense{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="container mx-auto px-6 py-12 text-center">
+    <h1 class="text-4xl font-extrabold text-green-400">Top Gainers</h1>
+    <p class="text-green-200/80 mt-3">
+        Stocks with highest positive price movement
+    </p>
+</div>
+
+<!-- Indian Gainers -->
+<div class="container mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold text-green-300 mb-6">
+        🇮🇳 Indian Market – Top Gainers
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- 30+ Indian Companies -->
+        <!-- Card Template -->
+        <!-- Repeat structure, data differs -->
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5">
+            <h3 class="font-bold">TCS</h3>
+            <p class="text-gray-300 text-sm">₹3895.40</p>
+            <p class="text-green-400 font-bold">+3.25%</p>
+        </div>
+
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">RELIANCE</h3><p class="text-sm text-gray-300">₹2510.10</p><p class="text-green-400 font-bold">+2.90%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">HDFCBANK</h3><p class="text-sm text-gray-300">₹1678.00</p><p class="text-green-400 font-bold">+2.45%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">INFY</h3><p class="text-sm text-gray-300">₹1589.60</p><p class="text-green-400 font-bold">+2.30%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">ICICIBANK</h3><p class="text-sm text-gray-300">₹1098.75</p><p class="text-green-400 font-bold">+2.10%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">AXISBANK</h3><p class="text-sm text-gray-300">₹1125.40</p><p class="text-green-400 font-bold">+1.85%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">SBIN</h3><p class="text-sm text-gray-300">₹782.10</p><p class="text-green-400 font-bold">+1.70%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">BHARTIARTL</h3><p class="text-sm text-gray-300">₹1145.80</p><p class="text-green-400 font-bold">+1.60%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">WIPRO</h3><p class="text-sm text-gray-300">₹485.30</p><p class="text-green-400 font-bold">+1.45%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">HCLTECH</h3><p class="text-sm text-gray-300">₹1398.60</p><p class="text-green-400 font-bold">+1.40%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">MARUTI</h3><p class="text-sm text-gray-300">₹10450.80</p><p class="text-green-400 font-bold">+1.35%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">TATAMOTORS</h3><p class="text-sm text-gray-300">₹985.60</p><p class="text-green-400 font-bold">+1.30%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">SUNPHARMA</h3><p class="text-sm text-gray-300">₹1456.20</p><p class="text-green-400 font-bold">+1.25%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">BAJFINANCE</h3><p class="text-sm text-gray-300">₹6920.30</p><p class="text-green-400 font-bold">+1.20%</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-5"><h3 class="font-bold">KOTAKBANK</h3><p class="text-sm text-gray-300">₹1768.40</p><p class="text-green-400 font-bold">+1.10%</p></div>
+
+    </div>
+</div>
+
+<!-- Global Gainers -->
+<div class="container mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold text-green-300 mb-6">
+        🌍 Global Market – Top Gainers
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">AAPL</h3><p class="text-gray-300">Apple Inc.</p><p class="text-green-400 font-bold mt-2">+2.5%</p><p class="text-sm text-gray-400">Price: $150.25</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">NVDA</h3><p class="text-gray-300">NVIDIA</p><p class="text-green-400 font-bold mt-2">+4.2%</p><p class="text-sm text-gray-400">Price: $485.90</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">MSFT</h3><p class="text-gray-300">Microsoft</p><p class="text-green-400 font-bold mt-2">+1.8%</p><p class="text-sm text-gray-400">Price: $410.30</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">META</h3><p class="text-gray-300">Meta</p><p class="text-green-400 font-bold mt-2">+3.1%</p><p class="text-sm text-gray-400">Price: $345.60</p></div>
+        <div class="bg-slate-900/70 border border-green-800/40 rounded-xl p-6"><h3 class="font-bold text-xl">AMZN</h3><p class="text-gray-300">Amazon</p><p class="text-green-400 font-bold mt-2">+2.0%</p><p class="text-sm text-gray-400">Price: $175.20</p></div>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="border-t border-green-800/40 py-6 text-center text-green-300/70 text-sm">
+    © 2025 StockSense · Educational purpose only
+</div>
+
+{% endblock %}
