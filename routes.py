@@ -831,3 +831,6 @@ def admin_test_brave():
     # Also include env var value masked
     masked = BRAVE_API_KEY[:4] + '...' + BRAVE_API_KEY[-4:]
     return jsonify({'key_masked': masked, 'results': results})
+
+
+# Notifications are run from app.py startup scheduler

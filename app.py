@@ -4,6 +4,7 @@ from auth import login_required, handle_login
 from datetime import datetime
 import os
 import logging
+import time
 from dotenv import load_dotenv
 
 
@@ -22,7 +23,7 @@ if not SECRET_KEY:
 app.config['SECRET_KEY'] = SECRET_KEY
 
 # Set the default prediction model. 0 for XGBoost, 1 for LSTM.
-app.config['DEFAULT_MODEL'] = 1
+app.config['DEFAULT_MODEL'] = 0
 
 # Configure session management
 app.config['SESSION_TYPE'] = 'filesystem'  # Store session data in the file system
@@ -36,5 +37,28 @@ from market_data import get_market_movers_cached, format_number_wrapper
 
 # Basic routes
 if __name__ == '__main__':
+    # Run notifications first (blocking) then start a scheduler thread to run every 24 hours
+    try:
+        import notifications
+        logging.info('Running notifications before server start')
+        notifications.run_notifications()
+
+        # Start background scheduler to re-run notifications every 24 hours
+        import threading
+
+        def _notifications_scheduler():
+            while True:
+                time.sleep(24 * 3600)
+                try:
+                    logging.info('Scheduled notifications run')
+                    notifications.run_notifications()
+                except Exception as e:
+                    logging.exception('Scheduled notifications failed: %s', e)
+
+        t = threading.Thread(target=_notifications_scheduler, daemon=True)
+        t.start()
+    except Exception as e:
+        logging.exception('Failed to run/start notifications: %s', e)
+
     from routes import app
     app.run(debug=True, port=5000)
