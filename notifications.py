@@ -19,6 +19,33 @@ COMPANIES = [
     'SBIN.ns', 'ITC.ns', 'LT.ns', 'AXISBANK.ns', 'BHARTIARTL.ns'
 ]
 
+# File to persist last notification send timestamp (epoch seconds)
+LAST_SENT_FILE = os.path.join(os.path.dirname(__file__), '.last_notification')
+
+
+def _get_last_sent() -> float:
+    """Return epoch seconds of last sent notification (0 if none or on error)."""
+    try:
+        if not os.path.exists(LAST_SENT_FILE):
+            return 0.0
+        with open(LAST_SENT_FILE, 'r') as f:
+            s = f.read().strip()
+            return float(s) if s else 0.0
+    except Exception:
+        logging.exception('Failed to read last sent file')
+        return 0.0
+
+
+def _set_last_sent(ts: float | None = None) -> None:
+    """Persist epoch seconds for last sent notification to disk."""
+    try:
+        if ts is None:
+            ts = time.time()
+        with open(LAST_SENT_FILE, 'w') as f:
+            f.write(str(float(ts)))
+    except Exception:
+        logging.exception('Failed to write last sent file')
+
 
 def _send_html_email(recipients: List[str], subject: str, html_body: str) -> bool:
     """Send a single HTML email to a list of recipients using SMTP credentials from env."""
@@ -120,6 +147,15 @@ def run_notifications(days: int = 7, model_choice: int = 1, max_companies: int =
         base_url = os.getenv('APP_BASE_URL', 'http://localhost:5000')
 
     logging.info('Starting notifications run: days=%d model=%d', days, model_choice)
+    # Check last sent timestamp; skip if within 24 hours
+    try:
+        last = _get_last_sent()
+        elapsed = time.time() - last
+        if last and elapsed < 24 * 3600:
+            logging.info('Last notifications sent %.0f seconds ago; skipping (need 24h).', elapsed)
+            return
+    except Exception:
+        logging.exception('Error checking last sent; continuing with notifications')
 
     increasing = predict_and_select(COMPANIES, days=days, model_choice=model_choice)
     if not increasing:
@@ -147,6 +183,13 @@ def run_notifications(days: int = 7, model_choice: int = 1, max_companies: int =
                 logging.error('Failed to send notification for %s', company)
         except Exception as e:
             logging.exception('Error sending notification for %s: %s', company, e)
+
+    # All done — record timestamp of this notification run
+    try:
+        _set_last_sent()
+        logging.info('Recorded last notification time')
+    except Exception:
+        logging.exception('Failed to record last notification time')
 
 
 if __name__ == '__main__':

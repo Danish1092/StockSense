@@ -43,28 +43,33 @@ from market_data import get_market_movers_cached, format_number_wrapper
 
 # Basic routes
 if __name__ == '__main__':
-    # Run notifications first (blocking) then start a scheduler thread to run every 24 hours
+    # Start notifications runner in background (non-blocking) so server becomes usable quickly
     try:
-        import notifications
-        logging.info('Running notifications before server start')
-        notifications.run_notifications()
-
-        # Start background scheduler to re-run notifications every 24 hours
         import threading
+        import notifications
 
-        def _notifications_scheduler():
+        def _background_notifications():
+            # short delay to allow server to finish starting
+            time.sleep(3)
+            try:
+                logging.info('Initial background notifications run')
+                notifications.run_notifications()
+            except Exception:
+                logging.exception('Initial notifications run failed')
+
+            # recurring runs every 24 hours
             while True:
-                time.sleep(24 * 3600)
                 try:
+                    time.sleep(24 * 3600)
                     logging.info('Scheduled notifications run')
                     notifications.run_notifications()
-                except Exception as e:
-                    logging.exception('Scheduled notifications failed: %s', e)
+                except Exception:
+                    logging.exception('Scheduled notifications failed')
 
-        t = threading.Thread(target=_notifications_scheduler, daemon=True)
+        t = threading.Thread(target=_background_notifications, daemon=True)
         t.start()
     except Exception as e:
-        logging.exception('Failed to run/start notifications: %s', e)
+        logging.exception('Failed to start background notifications: %s', e)
 
     from routes import app
     app.run(debug=True, port=5000)
