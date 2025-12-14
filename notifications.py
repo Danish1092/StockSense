@@ -192,6 +192,42 @@ def run_notifications(days: int = 7, model_choice: int = 1, max_companies: int =
         logging.exception('Failed to record last notification time')
 
 
+# Background controller
+_BACKGROUND_STARTED = False
+
+
+def start_background(delay_seconds: int = 3, interval_seconds: int = 24 * 3600) -> None:
+    """Start a daemon background thread that runs notifications.
+
+    Idempotent: subsequent calls have no effect.
+    """
+    global _BACKGROUND_STARTED
+    if _BACKGROUND_STARTED:
+        return
+    _BACKGROUND_STARTED = True
+
+    import threading
+
+    def _background_notifications():
+        time.sleep(delay_seconds)
+        try:
+            logging.info('Initial background notifications run')
+            run_notifications()
+        except Exception:
+            logging.exception('Initial notifications run failed')
+
+        while True:
+            try:
+                time.sleep(interval_seconds)
+                logging.info('Scheduled notifications run')
+                run_notifications()
+            except Exception:
+                logging.exception('Scheduled notifications failed')
+
+    t = threading.Thread(target=_background_notifications, daemon=True)
+    t.start()
+
+
 if __name__ == '__main__':
     # Allow manual testing of the notifications runner
     run_notifications()
