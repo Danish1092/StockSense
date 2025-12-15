@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+    body {
+        background: radial-gradient(circle at top, #0f172a, #020617);
+        min-height: 100vh;
+        color: #d1fae5;
+        overflow-x: hidden;
+    }
+
+    /* Glass Containers */
+    .glass-effect {
+        background: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .glass-card {
+        background: rgba(2, 6, 23, 0.75);
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        transition: all 0.3s ease;
+    }
+
+    /* FAQ Accordion */
+    .faq-item {
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        border-color: #22c55e;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+    }
+
+    .faq-q {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #bbf7d0;
+        cursor: pointer;
+    }
+
+    .faq-q span {
+        transition: transform 0.3s ease;
+    }
+
+    .faq-q.active span {
+        transform: rotate(180deg);
+    }
+
+    .faq-a {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, opacity 0.3s ease;
+        opacity: 0;
+        color: #a7f3d0;
+        line-height: 1.6;
+    }
+
+    .faq-a.active {
+        max-height: 500px;
+        opacity: 1;
+        margin-top: 10px;
+    }
+
+    /* Button */
+    .btn-green {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #022c22;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-green:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-effect py-16 text-center">
+    <h1 class="text-4xl sm:text-5xl font-bold tracking-wide text-green-400">
+        Frequently Asked Questions
+    </h1>
+    <p class="mt-4 text-green-200/80 max-w-xl mx-auto">
+        Clear answers to common questions about StockSense and its prediction system
+    </p>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 py-14">
+    <div class="glass-card rounded-2xl p-8 space-y-6">
+
+        {% for q,a in [
+        ("What is StockSense?", "StockSense is an AI-powered stock market prediction platform offering multi-horizon forecasts, real-time news, and chatbot-based explanations. It is designed for educational and research purposes."),
+        ("Why is stock market prediction difficult?", "Markets are volatile and influenced by news, global events, and investor behavior. Models estimate probabilities, not guaranteed outcomes."),
+        ("Which models are used?", "A hybrid XGBoost and LSTM model is used to combine feature-based learning with time-series forecasting."),
+        ("Why use a hybrid approach?", "It improves accuracy by capturing both short-term patterns and long-term market trends."),
+        ("What is multi-horizon forecasting?", "It predicts prices across multiple timeframes such as daily, monthly, and yearly."),
+        ("How does real-time news help?", "It provides context for sudden market movements and improves interpretability."),
+        ("What is the role of the chatbot?", "The chatbot explains predictions, indicators, and trends in simple language."),
+        ("How is user data secured?", "Authentication and storage are managed using Supabase with secure encryption."),
+        ("Who can use StockSense?", "Both beginners and advanced investors can use the platform."),
+        ("What is the future scope?", "Future upgrades include sentiment analysis, explainable AI, and trading simulations.")
+        ] %}
+        <div class="faq-item p-4">
+            <button class="faq-q">
+                {{ q }}
+                <span>▾</span>
+            </button>
+            <div class="faq-a">
+                {{ a }}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center pt-6">
+            <a href="/contact" class="btn-green px-8 py-3 rounded-xl inline-block">
+                Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const buttons = document.querySelectorAll(".faq-q");
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const answer = btn.nextElementSibling;
+            const open = btn.classList.contains("active");
+
+            document.querySelectorAll(".faq-q").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".faq-a").forEach(a => a.classList.remove("active"));
+
+            if (!open) {
+                btn.classList.add("active");
+                answer.classList.add("active");
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
