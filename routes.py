@@ -77,8 +77,8 @@ def info():
 @app.route('/')
 def index():
     try:
-        show_popup = not session.get('popup_seen', False)
-        session['popup_seen'] = True
+        # Show popup only when set by login and consume the flag so it won't repeat until next login
+        show_popup = session.pop('show_popup', False)
         gainers, losers = get_market_movers_cached(limit=10)
         return render_template('index.html', gainers=gainers, losers=losers, format_number=format_number_wrapper, show_popup=show_popup)
     except Exception as e:

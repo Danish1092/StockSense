@@ -115,6 +115,8 @@ def handle_login(email, password):
                 session['user_email'] = user['email']
                 session['user_id'] = user['id']
                 session['username'] = user['full_name']
+                # Trigger welcome popup for this login only
+                session['show_popup'] = True
                 logging.info(f"User {email} logged in successfully.")
                 return True, "Login successful."
             else:
