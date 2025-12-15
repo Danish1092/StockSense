@@ -131,7 +131,26 @@
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between">
                 <!-- Logo -->
-                <a href="/" class="text-2xl font-extrabold text-green-400 hover:text-green-300 transition-colors tracking-wide drop-shadow">StockSense</a>
+                <a href="/" class="flex items-center space-x-3 group">
+                    <!-- Logo Image -->
+                    <img src="{{ url_for('static', filename='logo.png') }}"
+                         alt="StockSense Logo"
+                         class="w-10 h-10 rounded-full 
+                                border border-green-700/50 
+                                shadow-lg 
+                                transition-transform duration-300 
+                                group-hover:scale-110 group-hover:rotate-3">
+
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-extrabold 
+                                 text-green-400 
+                                 tracking-wide 
+                                 drop-shadow 
+                                 group-hover:text-green-300 
+                                 transition-colors">
+                        StockSense
+                    </span>
+                </a>
 
                 <!-- Navigation Links -->
                 <div class="hidden md:flex items-center space-x-6 nav-menu">
@@ -312,14 +331,12 @@
 </div>
 <script>
     function closeWelcomeModal() {
-        localStorage.setItem("stocksense_popup_seen", "true");
         document.getElementById("welcomeModal").classList.add("hidden");
     }
 
     window.addEventListener("load", () => {
-        const popupSeen = localStorage.getItem("stocksense_popup_seen");
-
-        if (!popupSeen) {
+        const showPopup = {{ show_popup|default(False)|tojson }};
+        if (showPopup) {
             setTimeout(() => {
                 document.getElementById("welcomeModal").classList.remove("hidden");
             }, 600);
