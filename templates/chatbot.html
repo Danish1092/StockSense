@@ -3,7 +3,19 @@
 {% block title %}Chatbot - StockSense{% endblock %}
 
 {% block content %}
-<div class="flex flex-col h-screen bg-black">
+<div class="flex flex-col h-screen bg-black" id="pageWrapper">
+    <!-- Auth-required overlay (shown when not signed in) -->
+    <div id="authOverlay" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div role="dialog" aria-modal="true" aria-labelledby="authOverlayTitle"
+             class="bg-gradient-to-br from-black/90 via-gray-900/95 to-black/90 rounded-3xl border border-green-800/40 p-6 max-w-lg w-full mx-4 text-center shadow-2xl transform transition-transform duration-200">
+            <h2 class="text-2xl font-bold text-green-400 mb-2">Please Sign In</h2>
+            <p id="authOverlayTitle" class="text-green-200 text-sm mb-6">You must be signed in to use the Chatbot. Sign in to access full features.</p>
+            <div class="flex items-center justify-center gap-4">
+                <a href="{{ url_for('login') }}" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-full font-medium shadow">Sign In</a>
+                <button onclick="closeAuthOverlay()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-green-700 text-green-200 hover:bg-green-900/20">Close</button>
+            </div>
+        </div>
+    </div>
     <!-- Header -->
     <div class="bg-gradient-to-r from-black via-gray-900 to-black border-b border-green-800/30 py-4">
         <div class="max-w-4xl mx-auto px-6">
@@ -51,6 +63,20 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+    function closeAuthOverlay() {
+        // Redirect back to home page when user closes the sign-in prompt
+        window.location.href = '{{ url_for("index") }}';
+    }
+
+    // On load, if not authenticated, show overlay
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.isAuthenticated) {
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) overlay.classList.remove('hidden');
+        }
+    });
+</script>
 <script>
 const chatWindow = document.getElementById('chatWindow');
 const chatForm = document.getElementById('chatForm');
