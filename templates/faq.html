@@ -9,7 +9,6 @@
         overflow-x: hidden;
     }
 
-    /* Glass Containers */
     .glass-effect {
         background: rgba(2, 6, 23, 0.85);
         backdrop-filter: blur(14px);
@@ -22,10 +21,8 @@
         backdrop-filter: blur(18px);
         border: 1px solid rgba(34, 197, 94, 0.2);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-        transition: all 0.3s ease;
     }
 
-    /* FAQ Accordion */
     .faq-item {
         border: 1px solid rgba(34, 197, 94, 0.25);
         border-radius: 12px;
@@ -62,26 +59,13 @@
         transition: max-height 0.4s ease, opacity 0.3s ease;
         opacity: 0;
         color: #a7f3d0;
-        line-height: 1.6;
+        line-height: 1.7;
     }
 
     .faq-a.active {
-        max-height: 500px;
+        max-height: 600px;
         opacity: 1;
         margin-top: 10px;
-    }
-
-    /* Button */
-    .btn-green {
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: #022c22;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-green:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
     }
 </style>
 {% endblock %}
@@ -100,41 +84,75 @@
     <div class="glass-card rounded-2xl p-8 space-y-6">
 
         {% for q,a in [
-        ("What is StockSense?", "StockSense is an AI-powered stock market prediction platform offering multi-horizon forecasts, real-time news, and chatbot-based explanations. It is designed for educational and research purposes."),
-        ("Why is stock market prediction difficult?", "Markets are volatile and influenced by news, global events, and investor behavior. Models estimate probabilities, not guaranteed outcomes."),
-        ("Which models are used?", "A hybrid XGBoost and LSTM model is used to combine feature-based learning with time-series forecasting."),
-        ("Why use a hybrid approach?", "It improves accuracy by capturing both short-term patterns and long-term market trends."),
-        ("What is multi-horizon forecasting?", "It predicts prices across multiple timeframes such as daily, monthly, and yearly."),
-        ("How does real-time news help?", "It provides context for sudden market movements and improves interpretability."),
-        ("What is the role of the chatbot?", "The chatbot explains predictions, indicators, and trends in simple language."),
-        ("How is user data secured?", "Authentication and storage are managed using Supabase with secure encryption."),
-        ("Who can use StockSense?", "Both beginners and advanced investors can use the platform."),
-        ("What is the future scope?", "Future upgrades include sentiment analysis, explainable AI, and trading simulations.")
+        ("What is StockSense?",
+         "StockSense is an AI-powered stock market prediction platform.<br>
+          It provides multi-horizon forecasts using ML models.<br>
+          The system also includes real-time news and chatbot support."),
+
+        ("Why is stock market prediction difficult?",
+         "Stock markets are highly volatile and unpredictable.<br>
+          Prices are influenced by news, global events, and sentiment.<br>
+          Models estimate probabilities, not guaranteed outcomes."),
+
+        ("Which models are used in StockSense?",
+         "StockSense uses a hybrid machine learning approach.<br>
+          XGBoost handles feature-based patterns efficiently.<br>
+          LSTM captures long-term time-series dependencies."),
+
+        ("Why is a hybrid approach preferred?",
+         "Single models cannot capture all market behaviors.<br>
+          Hybrid models balance short-term signals and trends.<br>
+          This improves accuracy and prediction stability."),
+
+        ("What is multi-horizon forecasting?",
+         "It predicts prices across different time ranges.<br>
+          Examples include daily, monthly, and yearly forecasts.<br>
+          This supports both traders and long-term investors."),
+
+        ("How does real-time news help users?",
+         "Market prices react quickly to breaking news.<br>
+          Real-time updates explain sudden price changes.<br>
+          This improves interpretation of predictions."),
+
+        ("What is the role of the chatbot?",
+         "The chatbot explains predictions in simple language.<br>
+          It clarifies indicators and market trends.<br>
+          This improves usability for beginners."),
+
+        ("How is user data secured?",
+         "Authentication is handled using Supabase.<br>
+          Secure encryption and access control are applied.<br>
+          Data confidentiality and integrity are maintained."),
+
+        ("Who can use StockSense?",
+         "The platform is suitable for all experience levels.<br>
+          Beginners receive simplified insights.<br>
+          Advanced users can explore detailed analytics."),
+
+        ("What is the future scope of StockSense?",
+         "Future work includes sentiment analysis.<br>
+          Explainable AI and new data sources may be added.<br>
+          Trading simulations are also planned.")
         ] %}
+
         <div class="faq-item p-4">
             <button class="faq-q">
                 {{ q }}
                 <span>▾</span>
             </button>
             <div class="faq-a">
-                {{ a }}
+                {{ a | safe }}
             </div>
         </div>
+
         {% endfor %}
 
-        <div class="text-center pt-6">
-            <a href="/contact" class="btn-green px-8 py-3 rounded-xl inline-block">
-                Contact Support
-            </a>
-        </div>
     </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const buttons = document.querySelectorAll(".faq-q");
-
-    buttons.forEach(btn => {
+    document.querySelectorAll(".faq-q").forEach(btn => {
         btn.addEventListener("click", () => {
             const answer = btn.nextElementSibling;
             const open = btn.classList.contains("active");

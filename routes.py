@@ -57,6 +57,11 @@ import peewee
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
 # Predict and Info routes
 @app.route('/predict')
 def predict():
