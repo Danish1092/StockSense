@@ -194,6 +194,11 @@
         </div>
     </nav>
 
+    <script>
+        // Expose authentication state to client-side scripts as a JSON boolean
+        window.isAuthenticated = {{ ('username' in session) | tojson }};
+    </script>
+
     <main>
         {% block content %}{% endblock %}
     </main>
