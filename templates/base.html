@@ -122,6 +122,11 @@
             }
         });
     </script>
+    <script>
+        // Expose minimal auth info to client JS
+        window.isAuthenticated = {{ ('user_email' in session) | tojson }};
+        window.username = {{ session.get('username') | tojson }};
+    </script>
 </head>
 
 

@@ -30,7 +30,9 @@
                 </div>
             </div>
                 <div class="flex flex-row gap-8 mt-8 w-full justify-center">
+                {% if can_predict %}
                 <button id="predictBtn" @click="tab = 'predict'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">predict</button>
+                {% endif %}
                 <button id="newsBtn" @click="tab = 'news'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">news</button>
                 <button id="chatbotBtn" @click="tab = 'chatbot'" class="w-56 px-6 py-3 border-2 border-green-500 bg-black italic font-semibold text-lg rounded-lg text-green-400 hover:bg-green-900 hover:text-green-200 transition focus:outline-none shadow">chatbot</button>
             </div>

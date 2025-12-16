@@ -48,10 +48,40 @@ from market_data import get_market_movers_cached, format_number_wrapper
 from datetime import datetime
 import logging
 import time
-from auth import handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
+from auth import login_required, handle_login, handle_signup_request, handle_signup_otp, handle_password_reset, verify_reset_code, reset_user_password
 from config import NEWS_API_KEY, BRAVE_API_KEY
 from chatbot_service import query_chatgpt_with_brave, brave_search
 import peewee
+import os
+import csv
+
+# Cache for stock list
+_STOCK_LIST_CACHE = None
+
+def get_stock_list():
+    global _STOCK_LIST_CACHE
+    if _STOCK_LIST_CACHE is not None:
+        return _STOCK_LIST_CACHE
+    try:
+        base = os.path.dirname(__file__)
+        csv_path = os.path.join(base, 'model', 'All Stock  List.csv')
+        stocks = []
+        with open(csv_path, encoding='utf-8', errors='ignore') as fh:
+            reader = csv.DictReader(fh)
+            for r in reader:
+                name = (r.get('Stock Name') or r.get('StockName') or '').strip()
+                sym = (r.get('Symbol') or r.get('Ticker') or '').strip().upper()
+                if not name or not sym:
+                    continue
+                # Ensure NSE suffix
+                if '.' not in sym:
+                    sym = sym + '.NS'
+                stocks.append({'name': name, 'symbol': sym, 'display': f"{name} ({sym})"})
+        _STOCK_LIST_CACHE = stocks
+        return stocks
+    except Exception:
+        _STOCK_LIST_CACHE = []
+        return []
 
 
 @app.route('/about')
@@ -65,17 +95,84 @@ def faq():
 # Predict and Info routes
 @app.route('/predict')
 def predict():
-    return render_template('predict.html', companies=companies, company_logos=company_logos)
+    # Build companies list with symbol + display name (display without .NS)
+    companies_list = []
+    for c in companies:
+        sym = c
+        disp = c.split('.')[0] if isinstance(c, str) and '.' in c else (c or '')
+        companies_list.append({'symbol': sym, 'display': disp})
+    return render_template('predict.html', companies=companies_list, company_logos=company_logos)
 
 @app.route('/info')
+@login_required
 def info():
-    company = request.args.get('company')
-    if not company:
+    # Support both 'company' (human name) and 'symbol' query params
+    q_company = request.args.get('company')
+    q_symbol = request.args.get('symbol')
+
+    # If neither provided, redirect user to predict/search
+    if not q_company and not q_symbol:
         return redirect(url_for('predict'))
-    # Map display name to Yahoo Finance symbol
-    symbol = company_tickers.get(company, company)
-    clean_name = company
-    return render_template('info.html', company_name=company, clean_company_name=clean_name, symbol=symbol)
+
+    # If company param actually contains a symbol (e.g., 'TCS.ns'), treat it as symbol
+    if q_company and '.' in q_company and not q_symbol:
+        q_symbol = q_company
+
+    # Normalize symbol if provided
+    symbol = None
+    if q_symbol:
+        symbol = q_symbol.strip().upper()
+        if '.' not in symbol:
+            symbol = symbol + '.NS'
+
+    # If only company provided, try to map via company_tickers or stock list
+    clean_name = q_company or ''
+    if q_company and not symbol:
+        # try mapping short human name to ticker
+        mapped = company_tickers.get(q_company)
+        if mapped:
+            symbol = mapped.upper()
+            if '.' not in symbol:
+                symbol = symbol + '.NS'
+        else:
+            # try to resolve from CSV list
+            stocks = get_stock_list()
+            for s in stocks:
+                if s['name'].lower() == q_company.strip().lower() or s['symbol'].split('.')[0].lower() == q_company.strip().lower():
+                    symbol = s['symbol']
+                    clean_name = s['name']
+                    break
+
+    # If we still don't have a symbol but have q_company as a short token, treat it as symbol
+    if not symbol and q_company:
+        cand = q_company.strip().upper()
+        if '.' not in cand:
+            cand = cand + '.NS'
+        symbol = cand
+
+    # Ensure final clean name when possible (prefer friendly name from CSV)
+    if symbol:
+        stocks = get_stock_list()
+        for s in stocks:
+            if s['symbol'].upper() == symbol.upper():
+                clean_name = s['name']
+                break
+    # if still not resolved, fall back to symbol without suffix for display
+    if not clean_name and symbol:
+        clean_name = symbol.split('.')[0]
+    # make sure display name does not include '.NS'
+    display_name = (clean_name or '')
+    if isinstance(display_name, str) and display_name.upper().endswith('.NS'):
+        display_name = display_name.rsplit('.', 1)[0]
+
+    # Determine if we can run model-based predictions for this symbol
+    can_predict = False
+    try:
+        can_predict = any(s_sym.lower() == (symbol or '').lower() for s_sym in companies)
+    except Exception:
+        can_predict = False
+
+    return render_template('info.html', company_name=symbol or q_company, clean_company_name=display_name, symbol=symbol, can_predict=can_predict)
 
 
 # Home page with market movers
@@ -99,9 +196,15 @@ def login():
         if email and password:
             success, msg = handle_login(email, password)
             if success:
+                # honor next parameter when present (query string)
+                next_url = request.args.get('next') or request.form.get('next')
+                if next_url:
+                    return redirect(next_url)
                 return redirect(url_for('index'))
             flash(msg or 'Invalid credentials')
-    return render_template('login.html')
+    # Pass through next if present so form can preserve it
+    next_url = request.args.get('next')
+    return render_template('login.html', next=next_url)
 
 # Logout route
 @app.route('/logout')
@@ -187,6 +290,26 @@ def market_movers_api():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/stock-list')
+def stock_list_api():
+    try:
+        stocks = get_stock_list()
+        return jsonify({'stocks': stocks})
+    except Exception as e:
+        logging.exception('Failed to load stock list')
+        return jsonify({'error': 'Failed to load stock list'}), 500
+
+
+@app.route('/api/auth-status')
+def api_auth_status():
+    try:
+        logged_in = 'user_email' in session
+        return jsonify({'logged_in': bool(logged_in), 'username': session.get('username')})
+    except Exception as e:
+        logging.exception('auth-status error')
+        return jsonify({'logged_in': False}), 200
 
 # Stocks page
 @app.route('/stocks')
