@@ -66,6 +66,35 @@
         .hero .hero-title { font-size:1.8rem; }
         .hero { padding:2rem 0; }
     }
+
+    /* Suggestion dropdown scrollbar styling */
+    .stock-suggestions {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(16,185,129,0.9) rgba(15,23,42,0.8);
+        max-height: 240px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        pointer-events: auto;
+    }
+    .stock-suggestions::-webkit-scrollbar { width: 10px; height: 10px; }
+    .stock-suggestions::-webkit-scrollbar-track { background: transparent; border-radius: 8px; }
+    .stock-suggestions::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #10B981, #059669);
+        border-radius: 8px;
+        border: 2px solid rgba(15,23,42,0.7);
+        min-height: 28px;
+    }
+    .stock-suggestions::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg,#059669,#047857); }
+
+    /* Search icon button inside input */
+    .search-icon-btn {
+        width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+        background: rgba(255,255,255,0.02); border-radius:999px; border:1px solid rgba(255,255,255,0.04);
+        backdrop-filter: blur(6px);
+    }
+    .search-icon-btn svg { width:18px; height:18px; }
+    .search-icon-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(16,185,129,0.12); }
 </style>
 {% endblock %}
 
@@ -110,8 +139,8 @@
                     <!-- Search bar: user can type company name or symbol -->
                     <div class="relative max-w-md mt-4">
                         <input id="stockSearch" type="search" placeholder="Search stocks, e.g. Reliance or TCS" aria-label="Search stocks"
-                            class="w-full px-4 py-3 rounded-full bg-gradient-to-r from-gray-800 to-gray-900 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400" />
-                        <button aria-hidden="true" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 opacity-80">
+                            class="w-full px-4 pr-12 py-3 rounded-full bg-gradient-to-r from-gray-800 to-gray-900 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400" />
+                        <button type="button" aria-hidden="true" class="search-icon-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 opacity-80">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.414-1.414l4.093 4.093a1 1 0 01-1.414 1.414l-4.093-4.093zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"/></svg>
                         </button>
                     </div>
@@ -597,9 +626,23 @@ document.addEventListener('DOMContentLoaded', function(){
     // Search suggestions backed by CSV stock list
     const search = document.getElementById('stockSearch');
     if (search) {
-        const wrap = document.createElement('div'); wrap.className='absolute left-0 right-0 mt-2 bg-gray-900 rounded-b-md overflow-hidden shadow-lg';
-        wrap.style.display='none'; wrap.style.zIndex=70; wrap.style.maxHeight='240px'; wrap.style.overflow='auto';
+        const wrap = document.createElement('div');
+        wrap.className='absolute left-0 right-0 mt-2 bg-gray-900 rounded-b-md overflow-hidden shadow-lg stock-suggestions';
+        wrap.style.display='none'; wrap.style.zIndex=70; wrap.style.maxHeight='240px';
         search.parentElement.appendChild(wrap);
+        
+        // Prevent scroll chaining: stop all scroll events on the page when mouse is over suggestions
+        wrap.addEventListener('wheel', function(ev){
+            ev.preventDefault();
+            ev.stopPropagation();
+            // Manually handle scroll
+            wrap.scrollTop += ev.deltaY;
+        }, { passive: false });
+        
+        // Also prevent touch scroll on mobile
+        wrap.addEventListener('touchmove', function(ev){
+            ev.stopPropagation();
+        }, { passive: true });
 
         let stockList = [];
         // Fetch list from server

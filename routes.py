@@ -64,21 +64,49 @@ def get_stock_list():
         return _STOCK_LIST_CACHE
     try:
         base = os.path.dirname(__file__)
-        csv_path = os.path.join(base, 'model', 'All Stock  List.csv')
         stocks = []
-        with open(csv_path, encoding='utf-8', errors='ignore') as fh:
-            reader = csv.DictReader(fh)
-            for r in reader:
-                name = (r.get('Stock Name') or r.get('StockName') or '').strip()
-                sym = (r.get('Symbol') or r.get('Ticker') or '').strip().upper()
-                if not name or not sym:
-                    continue
-                # Ensure NSE suffix
-                if '.' not in sym:
-                    sym = sym + '.NS'
-                stocks.append({'name': name, 'symbol': sym, 'display': f"{name} ({sym})"})
-        _STOCK_LIST_CACHE = stocks
-        return stocks
+
+        # Load Indian NSE list (All Stock  List.csv)
+        nse_path = os.path.join(base, 'model', 'All Stock  List.csv')
+        if os.path.exists(nse_path):
+            with open(nse_path, encoding='utf-8', errors='ignore') as fh:
+                reader = csv.DictReader(fh)
+                for r in reader:
+                    name = (r.get('Stock Name') or r.get('StockName') or r.get('Company') or '').strip()
+                    sym = (r.get('Symbol') or r.get('Ticker') or '').strip().upper()
+                    if not name or not sym:
+                        continue
+                    # Ensure NSE suffix
+                    if '.' not in sym:
+                        sym = sym + '.NS'
+                    stocks.append({'name': name, 'symbol': sym, 'market': 'NSE', 'display': f"{name} ({sym})"})
+
+        # Load US/NASDAQ list (nasdaq-listed-symbols.csv) if present
+        nasdaq_path = os.path.join(base, 'model', 'nasdaq-listed-symbols.csv')
+        if os.path.exists(nasdaq_path):
+            with open(nasdaq_path, encoding='utf-8', errors='ignore') as fh:
+                reader = csv.DictReader(fh)
+                for r in reader:
+                    # NASDAQ CSV uses 'Symbol' and 'Company Name'
+                    name = (r.get('Company Name') or r.get('Company') or r.get('CompanyName') or '').strip()
+                    sym = (r.get('Symbol') or '').strip().upper()
+                    if not name or not sym:
+                        continue
+                    # For US symbols we keep symbol as-is (do not append .NS)
+                    stocks.append({'name': name, 'symbol': sym, 'market': 'NASDAQ', 'display': f"{name} ({sym})"})
+
+        # De-duplicate by symbol (keep first occurrence)
+        seen = set()
+        unique = []
+        for s in stocks:
+            key = (s.get('symbol') or '').upper()
+            if key in seen:
+                continue
+            seen.add(key)
+            unique.append(s)
+
+        _STOCK_LIST_CACHE = unique
+        return unique
     except Exception:
         _STOCK_LIST_CACHE = []
         return []
@@ -118,12 +146,26 @@ def info():
     if q_company and '.' in q_company and not q_symbol:
         q_symbol = q_company
 
-    # Normalize symbol if provided
+    # Normalize symbol if provided. Use stock list to avoid incorrectly appending .NS to US symbols
     symbol = None
+    stocks = get_stock_list()
     if q_symbol:
-        symbol = q_symbol.strip().upper()
-        if '.' not in symbol:
-            symbol = symbol + '.NS'
+        cand = q_symbol.strip().upper()
+        # Exact match in stock list (respect market)
+        matched = next((s for s in stocks if (s.get('symbol') or '').upper() == cand), None)
+        if matched:
+            symbol = matched['symbol']
+        else:
+            # Check if there's an NSE entry with appended .NS
+            matched2 = next((s for s in stocks if (s.get('symbol') or '').upper() == cand + '.NS'), None)
+            if matched2:
+                symbol = matched2['symbol']
+            else:
+                # Fallback: assume NSE if no market info available
+                if '.' not in cand:
+                    symbol = cand + '.NS'
+                else:
+                    symbol = cand
 
     # If only company provided, try to map via company_tickers or stock list
     clean_name = q_company or ''
@@ -295,8 +337,18 @@ def market_movers_api():
 @app.route('/api/stock-list')
 def stock_list_api():
     try:
+        # Allow clients to force-refresh the CSV load (useful when files are added/changed)
+        refresh = request.args.get('refresh')
+        global _STOCK_LIST_CACHE
+        if refresh and refresh in ('1', 'true', 'yes'):
+            _STOCK_LIST_CACHE = None
         stocks = get_stock_list()
-        return jsonify({'stocks': stocks})
+        # Return basic stats for debugging (count by market)
+        counts = {}
+        for s in stocks:
+            m = s.get('market') or 'UNKNOWN'
+            counts[m] = counts.get(m, 0) + 1
+        return jsonify({'stocks': stocks, 'counts': counts})
     except Exception as e:
         logging.exception('Failed to load stock list')
         return jsonify({'error': 'Failed to load stock list'}), 500
