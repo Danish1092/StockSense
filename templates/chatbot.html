@@ -152,6 +152,14 @@ if (messageInput) {
         messageInput.style.height = 'auto';
         messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
     });
+    // Submit on Enter (press Enter to send, Shift+Enter for newline)
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (typeof chatForm.requestSubmit === 'function') chatForm.requestSubmit();
+            else chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+    });
 }
 
 // send button triggers submit
