@@ -52,10 +52,14 @@ def handle_signup_request(email, password, username):
     Step 1: Called when user submits signup form. Generates OTP, sends email, stores data in session.
     """
     try:
+        # Normalize email to lowercase for consistent checking
+        email = email.strip().lower()
+        
         # Check if user already exists
         result = supabase.table('users').select('id').eq('email', email).execute()
-        if result.data:
-            return False, "Email already registered."
+        if result.data and len(result.data) > 0:
+            logging.warning(f"Signup attempt with existing email: {email}")
+            return False, "A user with this email already exists. Please login or use a different email."
 
         otp = generate_verification_code()
         # Store signup data and OTP in session
@@ -87,10 +91,18 @@ def handle_signup_otp(otp_input):
         if otp_input != pending['otp']:
             return False, "Invalid verification code."
 
+        # Double-check that email doesn't exist (race condition prevention)
+        email = pending['email'].strip().lower()
+        existing_user = supabase.table('users').select('id').eq('email', email).execute()
+        if existing_user.data and len(existing_user.data) > 0:
+            session.pop('pending_signup', None)
+            logging.warning(f"Race condition: Email {email} was registered during OTP verification")
+            return False, "A user with this email already exists. Please login or use a different email."
+
         # Hash the password
         hashed_password = bcrypt.hashpw(pending['password'].encode('utf-8'), bcrypt.gensalt())
         data = {
-            'email': pending['email'],
+            'email': email,
             'password_hash': hashed_password.decode('utf-8'),
             'full_name': pending['username'],
             'created_at': str(datetime.utcnow()),
@@ -98,6 +110,7 @@ def handle_signup_otp(otp_input):
         }
         supabase.table('users').insert(data).execute()
         session.pop('pending_signup', None)
+        logging.info(f"New user account created for: {email}")
         return True, "Account created successfully."
     except Exception as e:
         logging.error(f"Signup OTP error: {e}")
